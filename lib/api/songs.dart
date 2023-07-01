@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:metadata_god/metadata_god.dart';
 // import 'package:metadata_god/metadata_god.dart';
@@ -28,27 +27,73 @@ final class MusicAPI {
     for (FileSystemEntity file in files) {
       if (file.path.endsWith('.mp3') ||
           file.path.endsWith('.m4a') ||
-          file.path.endsWith('aac')) {
+          file.path.endsWith('mp4') ||
+          file.path.endsWith('.flac')) {
         musicFiles.add(file.path);
       }
     }
-    debugPrint('Music Files........................${musicFiles.length}');
-    // for (var music in musicFiles) {
-    //   var detail = await MetadataGod.readMetadata(file: music);
-    //   musicDetails.add(detail);
-    // }
-
     return musicFiles;
-    // Iterate through the music files and print the metadata for each file.
-    // for (FileSystemEntity file in musicFiles) {
-    //   debugPrint('Music................files...........${file.path}.........');
-    //   Metadata metadata = await MetadataGod.readMetadata(file: file.path);
-    // }
   }
 
-  Future<Metadata> getMusicMetaData(String file) async {
-    var metaData = await MetadataGod.readMetadata(file: file);
-    debugPrint(metaData.title);
-    return metaData;
+//this method returns audio file metadata
+  Future<Metadata?> getMusicMetaData(String file) async {
+    Metadata? metadata;
+    try {
+      await MetadataGod.readMetadata(file: file)
+          .then((value) => metadata = value);
+    } catch (e) {
+      metadata = null;
+    }
+
+    return metadata;
+  }
+
+//this function gets data on the specific album the music file is from
+  Future<List<String>> getMusicAlbums(List<String> musicFiles) async {
+    List<String> musicAlbums = [];
+    for (var music in musicFiles) {
+      await getMusicMetaData(music).then((value) {
+        if (value.runtimeType != Null && value!.album.runtimeType != Null) {
+          musicAlbums.add(value.album!);
+        } else {
+          musicAlbums.add('Unknown');
+        }
+      });
+    }
+    return musicAlbums;
+  }
+
+  //this function retrieves album art metadata
+  Future<List<Map<String?, Uint8List?>>> getAlbumArt(
+      List<String> musicFiles) async {
+    List<Map<String?, Uint8List?>> albumArtRefined = [];
+    List<Map<String?, Uint8List?>> albumArts = [];
+    for (var music in musicFiles) {
+      await getMusicMetaData(music).then((value) {
+        if (value.runtimeType != Null && value!.picture.runtimeType != Null) {
+          albumArts.add({value.album!: value.picture!.data});
+        } else {
+          albumArts.add({null: null});
+        }
+      });
+    }
+    albumArtRefined = albumArts.toSet().toList();
+    return albumArtRefined;
+  }
+
+  //this function retrieves the album Artist Data
+  Future<List<String>> getAlbumArtist(List<String> musicFiles) async {
+    List<String> albumArtist = [];
+    for (var file in musicFiles) {
+      await getMusicMetaData(file).then((value) {
+        if (value.runtimeType != Null &&
+            value!.albumArtist.runtimeType != Null) {
+          albumArtist.add(value.albumArtist!);
+        } else {
+          albumArtist.add('Unkown');
+        }
+      });
+    }
+    return albumArtist;
   }
 }

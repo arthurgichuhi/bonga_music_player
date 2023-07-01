@@ -13,9 +13,12 @@ class ResourcesNavigation extends StatelessWidget {
         onTap: on_pressed,
         borderRadius: BorderRadius.circular(6),
         splashColor: AppColors.secondary,
-        child: Text(
-          button_name,
-          style: TextStyle(fontSize: 15),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            button_name,
+            style: TextStyle(fontSize: 15),
+          ),
         ),
       ),
     );
