@@ -28,8 +28,6 @@ class _MusicResourcesState extends State<MusicResources> {
         setState(() {
           musicAlbums = value;
         });
-        debugPrint(
-            'Music files...........${musicFiles.length}...........Albums..........${musicAlbums.length}');
       });
     });
   }

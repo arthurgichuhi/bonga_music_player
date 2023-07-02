@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:metadata_god/metadata_god.dart';
-// import 'package:metadata_god/metadata_god.dart';
 
 class MusicFileInfo {
   List<String> musicFiles;
@@ -64,21 +63,19 @@ final class MusicAPI {
   }
 
   //this function retrieves album art metadata
-  Future<List<Map<String?, Uint8List?>>> getAlbumArt(
-      List<String> musicFiles) async {
-    List<Map<String?, Uint8List?>> albumArtRefined = [];
-    List<Map<String?, Uint8List?>> albumArts = [];
+  Future<List<Uint8List?>> getAlbumArt(List<String> musicFiles) async {
+    List<Uint8List?> albumArts = [];
     for (var music in musicFiles) {
       await getMusicMetaData(music).then((value) {
         if (value.runtimeType != Null && value!.picture.runtimeType != Null) {
-          albumArts.add({value.album!: value.picture!.data});
+          albumArts.add(value.picture!.data);
         } else {
-          albumArts.add({null: null});
+          albumArts.add(null);
         }
       });
     }
-    albumArtRefined = albumArts.toSet().toList();
-    return albumArtRefined;
+
+    return albumArts;
   }
 
   //this function retrieves the album Artist Data

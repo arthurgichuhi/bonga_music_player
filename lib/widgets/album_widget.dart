@@ -10,36 +10,53 @@ class AlbumWidget extends StatelessWidget {
       required this.artist,
       required this.songNo});
   final Uint8List? albumArt;
-  final String albumName;
-  final String artist;
-  final int songNo;
+  final String? albumName;
+  final String? artist;
+  final int? songNo;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          albumArt != null
-              ? Image.memory(
-                  albumArt!,
-                  scale: 150,
-                )
-              : const Icon(
-                  CupertinoIcons.music_note,
-                  size: 150,
+    return Padding(
+      padding: EdgeInsets.only(left: 2),
+      child: SizedBox(
+        height: 190,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            albumArt != null
+                ? Image.memory(
+                    albumArt!,
+                    scale: 11,
+                  )
+                : const Icon(
+                    CupertinoIcons.music_note,
+                    size: 90,
+                  ),
+            const Divider(
+              height: 1,
+            ),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints.tight(Size(100, 30)),
+                      child: Text(
+                        albumName != null ? albumName! : '',
+                        style: TextStyle(
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    Text(artist != null ? artist! : '')
+                  ],
                 ),
-          const Divider(
-            height: 1,
-          ),
-          Row(
-            children: [
-              Column(
-                children: [Text(albumName), Text(artist)],
-              ),
-              Text(songNo.toString())
-            ],
-          )
-        ],
+                Text(songNo.toString())
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

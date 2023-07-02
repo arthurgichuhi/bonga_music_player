@@ -1,8 +1,8 @@
 import 'dart:typed_data';
-
 import 'package:bonga_music/api/songs.dart';
 import 'package:bonga_music/models/album_widget_model.dart';
 import 'package:bonga_music/theme.dart';
+import 'package:bonga_music/widgets/album_widget.dart';
 import 'package:flutter/material.dart';
 
 class AlbumsList extends StatefulWidget {
@@ -22,61 +22,103 @@ class _AlbumsListState extends State<AlbumsList> {
   //this list holds the Album artist data
   List<String> albumArtists = [];
   //this list of type Map<String?,U8intlist?> holds the album name and picture data
-  List<Map<String?, Uint8List?>> albumArt = [];
+  List<Uint8List?> albumArt = [];
   //this List holds AlbumWidgetModel data type
-  List<AlbumWidgetModel> albumWidgetData = [];
+  List<Map<String, dynamic>> albumNameArt = [];
+  List<Map<String, dynamic>> albumsSongCount = [];
 
   @override
   void initState() {
     super.initState();
     //this section of code in initializing the music file path data from music folder
-    MusicAPI().getLocalMusicFiles().then((value) {
+    MusicAPI().getLocalMusicFiles().then((value) async {
       setState(() {
         musicFiles = value;
       });
       //this section creates a list of the album data from the music file path data
-      MusicAPI().getMusicAlbums(musicFiles).then((value) {
+      await MusicAPI().getMusicAlbums(musicFiles).then((value) async {
         setState(() {
           musicAlbums = value;
         });
       });
       //this sections sets the album artist data
-      MusicAPI().getAlbumArtist(musicFiles).then((value) {
+      await MusicAPI().getAlbumArtist(musicFiles).then((value) {
         setState(() {
           albumArtists = value;
         });
       });
 
       //this section retrieves the album name data and picture in map format
-      MusicAPI().getAlbumArt(musicFiles).then((value) {
+      await MusicAPI().getAlbumArt(musicFiles).then((value) {
         setState(() {
           albumArt = value;
         });
       });
-      //this section sets the number albums
-      if (musicAlbums.isNotEmpty) {
-        //first filter the music album data to unique values
-        var uniqueMusicAlbumsData = musicAlbums.toSet().toList();
-        //second dividing the numbe of the new unique albums number by 3
-        //since every row of the list will only have 3 albums
-        var number = uniqueMusicAlbumsData.length ~/ 3;
-        setState(() {
-          albumNo = number.toInt();
-        });
-      }
+      setupAlbumList();
     });
   }
+
   //this function section setups the album list
+  void setupAlbumList() {
+    List<String> uniqueAlbumList = musicAlbums.toSet().toList();
+    for (int x = 0; x <= albumArt.length - 1; x++) {
+      albumNameArt.add({
+        'album': musicAlbums[x],
+        'albumArtist': albumArtists[x],
+        'albumArt': albumArt[x]
+      });
+    }
+    for (int x = 0; x <= uniqueAlbumList.length - 1; x++) {
+      var counter =
+          musicAlbums.where((element) => element == uniqueAlbumList[x]);
+      var albumArtIterable = albumNameArt
+          .where((element) => element['album'] == uniqueAlbumList[x]);
+
+      albumsSongCount.add({
+        'album': uniqueAlbumList[x],
+        'songNo': counter.length,
+        'albumArt': albumArtIterable.first['albumArt'],
+        'albumArtist': albumArtIterable.first['albumArtist']
+      });
+    }
+    albumsSongCount.toSet().toList();
+
+    for (var sorted in albumsSongCount) {
+      debugPrint(
+          '${sorted['album']}..............${sorted['songNo']}......${sorted['albumArt'].runtimeType}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: ListView.builder(
-        itemCount: albumNo,
-        itemBuilder: (context, index) => Card(
-          color: AppColors.accent,
-        ),
-      ),
+          itemCount: albumsSongCount.length ~/ 3.toInt(),
+          itemBuilder: (context, index) {
+            int indexAdd = index;
+            if (index > 0) {
+              indexAdd = index + 3;
+            }
+            return Row(
+              children: [
+                AlbumWidget(
+                    albumArt: albumsSongCount[indexAdd]['albumArt'],
+                    albumName: albumsSongCount[indexAdd]['album'],
+                    artist: albumsSongCount[indexAdd]['albumArtist'],
+                    songNo: albumsSongCount[indexAdd]['songNo']),
+                AlbumWidget(
+                    albumArt: albumsSongCount[indexAdd + 1]['albumArt'],
+                    albumName: albumsSongCount[indexAdd + 1]['album'],
+                    artist: albumsSongCount[indexAdd + 1]['albumArtist'],
+                    songNo: albumsSongCount[indexAdd + 1]['songNo']),
+                AlbumWidget(
+                    albumArt: albumsSongCount[indexAdd + 2]['albumArt'],
+                    albumName: albumsSongCount[indexAdd + 2]['album'],
+                    artist: albumsSongCount[indexAdd + 2]['albumArtist'],
+                    songNo: albumsSongCount[indexAdd + 2]['songNo'])
+              ],
+            );
+          }),
     );
   }
 }

@@ -4,7 +4,7 @@ class AlbumWidgetModel {
   final Uint8List albumArt;
   final String albumName;
   final String artist;
-  final int songNo;
+  final List<String> songs;
 
-  AlbumWidgetModel(this.albumArt, this.albumName, this.artist, this.songNo);
+  AlbumWidgetModel(this.albumArt, this.albumName, this.artist, this.songs);
 }
