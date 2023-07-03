@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bonga_music/screen/album_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -8,29 +9,52 @@ class AlbumWidget extends StatelessWidget {
       required this.albumArt,
       required this.albumName,
       required this.artist,
-      required this.songNo});
+      required this.songs,
+      required this.songDuration,
+      required this.musicTitles,
+      required this.trackArtist});
   final Uint8List? albumArt;
   final String? albumName;
   final String? artist;
-  final int? songNo;
+  final List<String> songs;
+  final List<double?> songDuration;
+  final List<String?> musicTitles;
+  final List<String> trackArtist;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 2),
-      child: SizedBox(
-        height: 190,
+    return InkWell(
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlbumViewScreen(
+              albumArt: albumArt!,
+              albumName: albumName!,
+              albumArtist: artist!,
+              songs: songs,
+              duration: songDuration,
+              musicTitle: musicTitles,
+              trackArtists: trackArtist,
+            ),
+          )),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             albumArt != null
-                ? Image.memory(
-                    albumArt!,
-                    scale: 11,
+                ? SizedBox(
+                    width: 114,
+                    height: 114,
+                    child: Image.memory(albumArt!),
                   )
-                : const Icon(
-                    CupertinoIcons.music_note,
-                    size: 90,
+                : const SizedBox(
+                    width: 114,
+                    height: 114,
+                    child: Icon(
+                      CupertinoIcons.music_note,
+                      size: 120,
+                    ),
                   ),
             const Divider(
               height: 1,
@@ -40,19 +64,27 @@ class AlbumWidget extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints.tight(Size(100, 30)),
+                    SizedBox(
+                      width: 114,
                       child: Text(
-                        albumName != null ? albumName! : '',
-                        style: TextStyle(
-                          fontSize: 13,
-                        ),
+                        albumName != null ? albumName! : 'Unknown',
+                        style: const TextStyle(
+                            fontSize: 13, overflow: TextOverflow.ellipsis),
                       ),
                     ),
-                    Text(artist != null ? artist! : '')
+                    const Divider(
+                      height: 1,
+                    ),
+                    SizedBox(
+                        width: 114,
+                        height: 30,
+                        child: Text(
+                          artist != null ? artist! : 'Unknown',
+                          style: const TextStyle(
+                              fontSize: 13, overflow: TextOverflow.ellipsis),
+                        ))
                   ],
                 ),
-                Text(songNo.toString())
               ],
             )
           ],

@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:metadata_god/metadata_god.dart';
@@ -47,6 +48,21 @@ final class MusicAPI {
     return metadata;
   }
 
+//this function retrieves the title of music
+  Future<List<String>> getMusicTitles(List<String> musicFiles) async {
+    List<String> musicTitle = [];
+    for (var file in musicFiles) {
+      await getMusicMetaData(file).then((value) {
+        if (value.runtimeType != Null && value!.title.runtimeType != Null) {
+          musicTitle.add(value.title!);
+        } else {
+          musicTitle.add('Unknown');
+        }
+      });
+    }
+    return musicTitle;
+  }
+
 //this function gets data on the specific album the music file is from
   Future<List<String>> getMusicAlbums(List<String> musicFiles) async {
     List<String> musicAlbums = [];
@@ -92,5 +108,31 @@ final class MusicAPI {
       });
     }
     return albumArtist;
+  }
+
+  //this function retrieves individual track artist data
+  Future<List<String>> getTrackArtist(List<String> musicFiles) async {
+    List<String> trackArtists = [];
+    for (var file in musicFiles) {
+      await getMusicMetaData(file).then((value) {
+        if (value.runtimeType != Null && value?.artist.runtimeType != Null) {
+          trackArtists.add(value!.artist!);
+        } else {
+          trackArtists.add('Unknown');
+        }
+      });
+    }
+    return trackArtists;
+  }
+
+  //this function retrieves music duration data
+  Future<List<double?>> getMusicDuration(List<String> musicFiles) async {
+    List<double?> musicDuration = [];
+    for (var file in musicFiles) {
+      await getMusicMetaData(file).then((value) {
+        musicDuration.add(value?.durationMs);
+      });
+    }
+    return musicDuration;
   }
 }
