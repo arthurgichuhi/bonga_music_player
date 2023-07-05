@@ -18,7 +18,7 @@ class AlbumWidget extends StatelessWidget {
   final String? artist;
   final List<String> songs;
   final List<double?> songDuration;
-  final List<String?> musicTitles;
+  final List<String> musicTitles;
   final List<String> trackArtist;
 
   @override

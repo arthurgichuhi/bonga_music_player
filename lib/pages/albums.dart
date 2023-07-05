@@ -120,7 +120,7 @@ class _AlbumsListState extends State<AlbumsList> {
 
     for (var sorted in outPutDataSort) {
       debugPrint(
-          '${sorted['album']}..............${sorted['songNo']}......${sorted['songs'].length}');
+          '${sorted['album']}..............${sorted['trackArtists'].length}......${sorted['songs'].length}');
     }
   }
 

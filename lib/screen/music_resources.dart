@@ -89,6 +89,9 @@ class _MusicResourcesState extends State<MusicResources> {
             musicFiles.isNotEmpty
                 ? Player(
                     musicFiles: musicFiles,
+                    screen: null,
+                    currentTrack: ValueNotifier(''),
+                    playerState: ValueNotifier(false),
                   )
                 : const CircularProgressIndicator(
                     color: AppColors.accent,
