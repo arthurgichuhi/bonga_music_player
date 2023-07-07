@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/screen/player_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -121,137 +122,163 @@ class _PlayerState extends State<Player> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 142,
+      height: MediaQuery.of(context).size.height * 0.198,
       child: Column(
         children: [
+          SizedBox(
+            // width: MediaQuery.of(context).size.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Slider(
+                    activeColor: AppColors.accent,
+                    inactiveColor: Colors.white,
+                    min: 0,
+                    max: duration.inSeconds.toDouble(),
+                    value: position.inSeconds.toDouble(),
+                    onChanged: (value) async {
+                      final position = Duration(seconds: value.toInt());
+                      await audioPlayer.seek(position);
+                    }),
+                widget.screen != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 8, right: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(currentPosition),
+                            Text(
+                                '${duration.inMinutes}:${duration.inSeconds % 60}')
+                          ],
+                        ),
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+          ),
           widget.screen == null
               ? Card(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+                    padding: const EdgeInsets.only(left: 8, top: 1, bottom: 1),
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(metaData.value.title != null
-                              ? metaData.value.title!
-                              : 'Unknown'),
-                          Text(metaData.value.artist != null
-                              ? metaData.value.artist!
-                              : 'Unknown'),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.sizeOf(context).width * 0.35),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PlayerScreen(
+                                        song: widget.currentTrack,
+                                        songs: widget.musicFiles,
+                                        albumArt: metaData.value.picture!.data,
+                                      ),
+                                    ));
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(metaData.value.title != null
+                                      ? metaData.value.title!
+                                      : 'Unknown'),
+                                  Text(metaData.value.artist != null
+                                      ? metaData.value.artist!
+                                      : 'Unknown'),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              //this button triggers the player to move to the previous music file in the list
+                              IconButton(
+                                  onPressed: () {
+                                    if (track.value == 0) {
+                                      track.value =
+                                          widget.musicFiles.length - 1;
+                                      widget.currentTrack.value =
+                                          widget.musicFiles[track.value];
+                                      updateTrackData(
+                                          widget.currentTrack.value);
+                                    } else {
+                                      track.value -= 1;
+                                      widget.currentTrack.value =
+                                          widget.musicFiles[track.value];
+                                      updateTrackData(
+                                          widget.currentTrack.value);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                      Icons.arrow_back_ios_new_rounded)),
+                              //this button triggers play and pause of playing music audio file
+                              IconButton(
+                                  onPressed: () async {
+                                    if (isPlaying) {
+                                      await audioPlayer.pause();
+                                      setState(() {
+                                        isPlaying = false;
+                                      });
+                                      widget.playerState.value = isPlaying;
+                                    } else {
+                                      // await audioPlayer.resume();
+                                      await audioPlayer.play(
+                                          UrlSource(widget.currentTrack.value));
+
+                                      setState(() {
+                                        isPlaying = true;
+                                      });
+                                      widget.playerState.value = isPlaying;
+                                    }
+                                  },
+                                  icon: Icon(isPlaying
+                                      ? CupertinoIcons.pause_fill
+                                      : CupertinoIcons.play_fill)),
+                              //this button is to play the next track on the list
+                              IconButton(
+                                  onPressed: () {
+                                    if (track.value ==
+                                        widget.musicFiles.length - 1) {
+                                      track.value = 0;
+                                    }
+                                    track.value += 1;
+                                    widget.currentTrack.value =
+                                        widget.musicFiles[track.value];
+                                    updateTrackData(widget.currentTrack.value);
+                                  },
+                                  icon: const Icon(
+                                      Icons.arrow_forward_ios_rounded))
+                            ],
+                          ),
+                          Hero(
+                              tag: 'hero-album-art',
+                              child: metaData.value.picture != null
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(right: 3),
+                                      child: Image.memory(
+                                        metaData.value.picture!.data,
+                                        height: 59,
+                                      ),
+                                    )
+                                  : const Padding(
+                                      padding: EdgeInsets.only(right: 4),
+                                      child: Icon(
+                                        CupertinoIcons.music_note,
+                                        size: 50,
+                                      ),
+                                    ))
                         ],
                       ),
                     ),
                   ),
                 )
               : const SizedBox(),
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-              SizedBox(
-                width: 290,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Slider(
-                        activeColor: AppColors.accent,
-                        inactiveColor: Colors.white,
-                        min: 0,
-                        max: duration.inSeconds.toDouble(),
-                        value: position.inSeconds.toDouble(),
-                        onChanged: (value) async {
-                          final position = Duration(seconds: value.toInt());
-                          await audioPlayer.seek(position);
-                        }),
-                    widget.screen != null
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 8, right: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(currentPosition),
-                                Text(
-                                    '${duration.inMinutes}:${duration.inSeconds % 60}')
-                              ],
-                            ),
-                          )
-                        : const SizedBox(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        //this button triggers the player to move to the previous music file in the list
-                        IconButton(
-                            onPressed: () {
-                              if (track.value == 0) {
-                                track.value = widget.musicFiles.length - 1;
-                                widget.currentTrack.value =
-                                    widget.musicFiles[track.value];
-                                updateTrackData(widget.currentTrack.value);
-                              } else {
-                                track.value -= 1;
-                                widget.currentTrack.value =
-                                    widget.musicFiles[track.value];
-                                updateTrackData(widget.currentTrack.value);
-                              }
-                            },
-                            icon: const Icon(Icons.arrow_back_ios_new_rounded)),
-                        //this button triggers play and pause of playing music audio file
-                        IconButton(
-                            onPressed: () async {
-                              if (isPlaying) {
-                                await audioPlayer.pause();
-                                setState(() {
-                                  isPlaying = false;
-                                });
-                                widget.playerState.value = isPlaying;
-                              } else {
-                                // await audioPlayer.resume();
-                                await audioPlayer
-                                    .play(UrlSource(widget.currentTrack.value));
-
-                                setState(() {
-                                  isPlaying = true;
-                                });
-                                widget.playerState.value = isPlaying;
-                              }
-                            },
-                            icon: Icon(isPlaying
-                                ? CupertinoIcons.pause_fill
-                                : CupertinoIcons.play_fill)),
-                        //this button is to play the next track on the list
-                        IconButton(
-                            onPressed: () {
-                              if (track.value == widget.musicFiles.length - 1) {
-                                track.value = 0;
-                              }
-                              track.value += 1;
-                              widget.currentTrack.value =
-                                  widget.musicFiles[track.value];
-                              updateTrackData(widget.currentTrack.value);
-                            },
-                            icon: const Icon(Icons.arrow_forward_ios_rounded))
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              metaData.value.picture != null
-                  ? Padding(
-                      padding: const EdgeInsets.only(right: 3),
-                      child: Image.memory(
-                        metaData.value.picture!.data,
-                        height: 59,
-                      ),
-                    )
-                  : const Padding(
-                      padding: EdgeInsets.only(right: 4),
-                      child: Icon(
-                        CupertinoIcons.music_note,
-                        size: 50,
-                      ),
-                    )
-            ]),
-          ),
         ],
       ),
     );

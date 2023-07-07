@@ -17,6 +17,7 @@ class _MusicResourcesState extends State<MusicResources> {
   final pages = [const AlbumsList()];
   List<String> musicFiles = [];
   List<dynamic> musicAlbums = [];
+  ValueNotifier<String> currentTrack = ValueNotifier('');
   @override
   void initState() {
     super.initState();
@@ -90,7 +91,7 @@ class _MusicResourcesState extends State<MusicResources> {
                 ? Player(
                     musicFiles: musicFiles,
                     screen: null,
-                    currentTrack: ValueNotifier(''),
+                    currentTrack: currentTrack,
                     playerState: ValueNotifier(false),
                   )
                 : const CircularProgressIndicator(

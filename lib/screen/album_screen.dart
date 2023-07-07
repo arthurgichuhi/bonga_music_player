@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:bonga_music/widgets/track_list_widget.dart';
 import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 
 class AlbumViewScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class AlbumViewScreen extends StatefulWidget {
       required this.duration,
       required this.musicTitle,
       required this.trackArtists});
-  final Uint8List albumArt;
+  final Uint8List? albumArt;
   final String albumName;
   final String albumArtist;
   final List<String> songs;
@@ -33,7 +34,27 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+          PopupMenuButton(
+            itemBuilder: (context) {
+              List<VoidCallback> functions = [() {}, () {}, () {}];
+              List<Text> textButtons = [
+                const Text('Edit Tags'),
+                const Text('Delete All'),
+                const Text('Close')
+              ];
+              return List.generate(
+                  2,
+                  (index) => PopupMenuItem(
+                        child: textButtons[index],
+                        onTap: functions[index],
+                      ));
+            },
+          )
+        ],
+      ),
       body: Column(
         children: [
           Card(
@@ -46,9 +67,14 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.height * 0.20,
-                          child: Image.memory(
-                            widget.albumArt,
-                          ),
+                          child: widget.albumArt != null
+                              ? Image.memory(
+                                  widget.albumArt!,
+                                )
+                              : const Icon(
+                                  CupertinoIcons.music_note,
+                                  size: 100,
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 5.0, top: 46),
@@ -62,6 +88,10 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
                                 height: 1,
                               ),
                               Text(widget.albumArtist),
+                              const Divider(
+                                height: 1,
+                              ),
+                              Text('Tracks: ${widget.songs.length}')
                             ],
                           ),
                         )

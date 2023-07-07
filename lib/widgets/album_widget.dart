@@ -28,7 +28,7 @@ class AlbumWidget extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => AlbumViewScreen(
-              albumArt: albumArt!,
+              albumArt: albumArt,
               albumName: albumName!,
               albumArtist: artist!,
               songs: songs,

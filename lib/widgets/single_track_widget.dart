@@ -1,3 +1,4 @@
+import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -47,15 +48,21 @@ class _SingleTrackState extends State<SingleTrack> {
         },
         child: SizedBox(
           child: Row(children: [
-            Icon(widget.currentTrack.value != widget.myTrackPath
-                ? CupertinoIcons.play
-                : widget.playerState.value
-                    ? CupertinoIcons.pause
-                    : CupertinoIcons.play),
+            // Icon(widget.currentTrack.value != widget.myTrackPath
+            //     ? CupertinoIcons.play
+            //     : widget.playerState.value
+            //         ? CupertinoIcons.pause
+            //         : CupertinoIcons.play),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.trackTitle),
+                Text(
+                  widget.trackTitle,
+                  style: TextStyle(
+                      color: widget.currentTrack.value == widget.myTrackPath
+                          ? AppColors.accent
+                          : null),
+                ),
                 const Divider(
                   height: 2,
                 ),
