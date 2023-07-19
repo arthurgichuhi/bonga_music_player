@@ -122,7 +122,7 @@ class _PlayerState extends State<Player> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.198,
+      height: MediaQuery.of(context).size.height * 0.223,
       child: Column(
         children: [
           SizedBox(
@@ -140,19 +140,6 @@ class _PlayerState extends State<Player> {
                       final position = Duration(seconds: value.toInt());
                       await audioPlayer.seek(position);
                     }),
-                widget.screen != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(left: 8, right: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(currentPosition),
-                            Text(
-                                '${duration.inMinutes}:${duration.inSeconds % 60}')
-                          ],
-                        ),
-                      )
-                    : const SizedBox(),
               ],
             ),
           ),
@@ -163,12 +150,14 @@ class _PlayerState extends State<Player> {
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           ConstrainedBox(
                             constraints: BoxConstraints(
                                 maxWidth:
-                                    MediaQuery.sizeOf(context).width * 0.35),
+                                    MediaQuery.sizeOf(context).width * 0.386111,
+                                minWidth:
+                                    MediaQuery.sizeOf(context).width * 0.380),
                             child: InkWell(
                               onTap: () {
                                 Navigator.push(
@@ -178,6 +167,11 @@ class _PlayerState extends State<Player> {
                                         song: widget.currentTrack,
                                         songs: widget.musicFiles,
                                         albumArt: metaData.value.picture!.data,
+                                        audioPlayer: audioPlayer,
+                                        position: position,
+                                        duration: duration,
+                                        songMetaData: metaData,
+                                        isPlaying: widget.playerState,
                                       ),
                                     ));
                               },
@@ -195,7 +189,7 @@ class _PlayerState extends State<Player> {
                             ),
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               //this button triggers the player to move to the previous music file in the list
                               IconButton(
