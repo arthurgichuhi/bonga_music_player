@@ -17,8 +17,13 @@ const PlayListsSchema = CollectionSchema(
   name: r'PlayLists',
   id: -7716305863640779075,
   properties: {
-    r'play_list_songs': PropertySchema(
+    r'playListName': PropertySchema(
       id: 0,
+      name: r'playListName',
+      type: IsarType.string,
+    ),
+    r'play_list_songs': PropertySchema(
+      id: 1,
       name: r'play_list_songs',
       type: IsarType.stringList,
     )
@@ -44,6 +49,12 @@ int _playListsEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.playListName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final list = object.play_list_songs;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
@@ -64,7 +75,8 @@ void _playListsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeStringList(offsets[0], object.play_list_songs);
+  writer.writeString(offsets[0], object.playListName);
+  writer.writeStringList(offsets[1], object.play_list_songs);
 }
 
 PlayLists _playListsDeserialize(
@@ -75,7 +87,8 @@ PlayLists _playListsDeserialize(
 ) {
   final object = PlayLists();
   object.id = id;
-  object.play_list_songs = reader.readStringList(offsets[0]);
+  object.playListName = reader.readStringOrNull(offsets[0]);
+  object.play_list_songs = reader.readStringList(offsets[1]);
   return object;
 }
 
@@ -87,6 +100,8 @@ P _playListsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readStringOrNull(offset)) as P;
+    case 1:
       return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -233,6 +248,159 @@ extension PlayListsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'playListName',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'playListName',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition> playListNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition> playListNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'playListName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'playListName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition> playListNameMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'playListName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'playListName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterFilterCondition>
+      playListNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'playListName',
+        value: '',
       ));
     });
   }
@@ -489,7 +657,19 @@ extension PlayListsQueryObject
 extension PlayListsQueryLinks
     on QueryBuilder<PlayLists, PlayLists, QFilterCondition> {}
 
-extension PlayListsQuerySortBy on QueryBuilder<PlayLists, PlayLists, QSortBy> {}
+extension PlayListsQuerySortBy on QueryBuilder<PlayLists, PlayLists, QSortBy> {
+  QueryBuilder<PlayLists, PlayLists, QAfterSortBy> sortByPlayListName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playListName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterSortBy> sortByPlayListNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playListName', Sort.desc);
+    });
+  }
+}
 
 extension PlayListsQuerySortThenBy
     on QueryBuilder<PlayLists, PlayLists, QSortThenBy> {
@@ -504,10 +684,29 @@ extension PlayListsQuerySortThenBy
       return query.addSortBy(r'id', Sort.desc);
     });
   }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterSortBy> thenByPlayListName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playListName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<PlayLists, PlayLists, QAfterSortBy> thenByPlayListNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'playListName', Sort.desc);
+    });
+  }
 }
 
 extension PlayListsQueryWhereDistinct
     on QueryBuilder<PlayLists, PlayLists, QDistinct> {
+  QueryBuilder<PlayLists, PlayLists, QDistinct> distinctByPlayListName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'playListName', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<PlayLists, PlayLists, QDistinct> distinctByPlay_list_songs() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'play_list_songs');
@@ -520,6 +719,12 @@ extension PlayListsQueryProperty
   QueryBuilder<PlayLists, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<PlayLists, String?, QQueryOperations> playListNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'playListName');
     });
   }
 

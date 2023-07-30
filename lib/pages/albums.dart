@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/database/db_api/db_operations_api.dart';
+import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:bonga_music/widgets/album_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +33,13 @@ class _AlbumsListState extends State<AlbumsList> {
   //this List holds data the album Name and file path data for music files used in sorting
   //this function holds the sorted data from the setupAlbumList function
   List<Map<String, dynamic>> outPutDataSort = [];
+  //this function initilizes all user created playlists data
+  Future<List<PlayLists>> getUserPlayListData() async {
+    return await IsarDBServices().getListOfPlaylists();
+  }
+
+  //List of user playlists
+  List<PlayLists> plaLists = [];
 
   @override
   void initState() {
@@ -72,6 +81,7 @@ class _AlbumsListState extends State<AlbumsList> {
         });
       });
       setupAlbumList();
+      getUserPlayListData().then((value) => setState(() => plaLists = value));
     });
   }
 
@@ -146,6 +156,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   songDuration: outPutDataSort[indexes[index]]['duration'],
                   musicTitles: outPutDataSort[indexes[index]]['title'],
                   trackArtist: outPutDataSort[indexes[index]]['trackArtists'],
+                  playlists: plaLists,
                 ),
                 AlbumWidget(
                   albumArt: outPutDataSort[indexes[index] + 1]['albumArt'],
@@ -156,6 +167,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   musicTitles: outPutDataSort[indexes[index] + 1]['title'],
                   trackArtist: outPutDataSort[indexes[index] + 1]
                       ['trackArtists'],
+                  playlists: plaLists,
                 ),
                 AlbumWidget(
                   albumArt: outPutDataSort[indexes[index] + 2]['albumArt'],
@@ -166,6 +178,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   musicTitles: outPutDataSort[indexes[index] + 2]['title'],
                   trackArtist: outPutDataSort[indexes[index] + 2]
                       ['trackArtists'],
+                  playlists: plaLists,
                 )
               ],
             );

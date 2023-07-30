@@ -1,6 +1,7 @@
 import 'package:bonga_music/theme.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../screen/music_resources.dart';
 
 class SingleTrack extends StatefulWidget {
   const SingleTrack(
@@ -9,12 +10,14 @@ class SingleTrack extends StatefulWidget {
       required this.playerState,
       required this.myTrackPath,
       required this.trackTitle,
-      required this.trackArtist});
+      required this.trackArtist,
+      required this.musicFiles});
   final ValueNotifier<String> currentTrack;
   final ValueNotifier<bool> playerState;
   final String myTrackPath;
   final String trackTitle;
   final String trackArtist;
+  final List<String> musicFiles;
 
   @override
   State<SingleTrack> createState() => _SingleTrackState();
@@ -27,11 +30,11 @@ class _SingleTrackState extends State<SingleTrack> {
     valueChangeListener();
     super.initState();
 
-    valueChangeListener();
+    // valueChangeListener();
   }
 
   valueChangeListener() {
-    widget.currentTrack.addListener(() {
+    currentTrackPath.addListener(() {
       debugPrint(
           'single track .........................${widget.currentTrack.value}');
     });
@@ -45,29 +48,36 @@ class _SingleTrackState extends State<SingleTrack> {
         onTap: () {
           widget.currentTrack.value = widget.myTrackPath;
           widget.playerState.value = true;
+          trackFilePaths.value = widget.musicFiles;
         },
         child: SizedBox(
           child: Row(children: [
-            // Icon(widget.currentTrack.value != widget.myTrackPath
+            // Icon(currentTrackPath.value != widget.myTrackPath
             //     ? CupertinoIcons.play
             //     : widget.playerState.value
             //         ? CupertinoIcons.pause
             //         : CupertinoIcons.play),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.trackTitle,
-                  style: TextStyle(
-                      color: widget.currentTrack.value == widget.myTrackPath
-                          ? AppColors.accent
-                          : null),
-                ),
-                const Divider(
-                  height: 2,
-                ),
-                Text(widget.trackArtist)
-              ],
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width,
+                  minHeight: MediaQuery.of(context).size.height * .055),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.trackTitle,
+                    style: TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                        color: currentTrackPath.value == widget.myTrackPath
+                            ? AppColors.accent
+                            : null),
+                  ),
+                  // const Divider(
+                  //   height: 2,
+                  // ),
+                  Text(widget.trackArtist)
+                ],
+              ),
             )
           ]),
         ),

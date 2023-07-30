@@ -33,6 +33,8 @@ class _TrackListState extends State<TrackList> {
     // TODO: implement initState
     super.initState();
     sortMusicList();
+    debugPrint(
+        '========+++++${widget.musicFilePaths.length}=======+++++++++++');
   }
 
   void sortMusicList() async {
@@ -52,7 +54,7 @@ class _TrackListState extends State<TrackList> {
         });
       }
     }
-    debugPrint('========+++++$no=======+++++++++++');
+
     if (no.isNegative) {
       for (var file in widget.musicFilePaths) {
         await MusicAPI()
@@ -66,7 +68,7 @@ class _TrackListState extends State<TrackList> {
       });
       for (var data in temporarySorter) {
         debugPrint(
-            '...........................${data!.trackNumber}===================');
+            '........${data!.title}...................${data.trackNumber}===================');
         setState(() {
           sortedMusicFilePaths.add(widget.musicFilePaths[songMetatdata
               .indexWhere((element) => element!.title == data.title)]);
@@ -91,6 +93,7 @@ class _TrackListState extends State<TrackList> {
               trackTitle: sortedMetadata[index]!.title!,
               trackArtist: sortedMetadata[index]!.artist!,
               playerState: widget.playerState,
+              musicFiles: sortedMusicFilePaths,
             );
           },
         );

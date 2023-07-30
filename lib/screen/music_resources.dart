@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/api/songs.dart';
 import 'package:bonga_music/pages/albums.dart';
 import 'package:bonga_music/theme.dart';
@@ -5,6 +6,12 @@ import 'package:bonga_music/widgets/music_resources_navigation_button.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:flutter/material.dart';
 
+final audioPlayer = AudioPlayer();
+ValueNotifier<String> currentTrackPath = ValueNotifier('');
+ValueNotifier<int> loopStatus = ValueNotifier(0);
+ValueNotifier<List<String>> trackFilePaths = ValueNotifier([]);
+
+//this is the main application widget
 class MusicResources extends StatefulWidget {
   const MusicResources({super.key});
 
@@ -17,13 +24,16 @@ class _MusicResourcesState extends State<MusicResources> {
   final pages = [const AlbumsList()];
   List<String> musicFiles = [];
   List<dynamic> musicAlbums = [];
-  ValueNotifier<String> currentTrack = ValueNotifier('');
   @override
   void initState() {
     super.initState();
     MusicAPI().getLocalMusicFiles().then((value) {
       setState(() {
         musicFiles = value;
+        currentTrackPath.value = musicFiles[0];
+        // for (int i = 0; i <= musicFiles.length; i++) {
+        //   trackFilePaths.value.add({'${i + 1}': musicFiles[i]});
+        // }
       });
       MusicAPI().getMusicAlbums(musicFiles).then((value) {
         setState(() {
@@ -31,6 +41,12 @@ class _MusicResourcesState extends State<MusicResources> {
         });
       });
     });
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -91,7 +107,7 @@ class _MusicResourcesState extends State<MusicResources> {
                 ? Player(
                     musicFiles: musicFiles,
                     screen: null,
-                    currentTrack: currentTrack,
+                    currentTrack: currentTrackPath,
                     playerState: ValueNotifier(false),
                   )
                 : const CircularProgressIndicator(

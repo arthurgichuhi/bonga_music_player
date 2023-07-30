@@ -8,6 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_god/metadata_god.dart';
 
+import 'music_resources.dart';
+
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen(
       {super.key,
@@ -25,7 +27,7 @@ class PlayerScreen extends StatefulWidget {
   final AudioPlayer audioPlayer;
   final Duration position;
   final Duration duration;
-  final ValueNotifier<Metadata> songMetaData;
+  final ValueNotifier<Metadata?> songMetaData;
   final ValueNotifier<bool> isPlaying;
 
   @override
@@ -113,16 +115,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future initializeAudio() async {
-    widget.audioPlayer.setReleaseMode(ReleaseMode.release);
+    widget.audioPlayer.setReleaseMode(
+        loopStatus.value == 1 ? ReleaseMode.loop : ReleaseMode.release);
     currentTrack.value = widget.song.value;
-    widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
+    // widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
   }
 
   void updateSongData(int currentTrack) async {
-    setState(() {
-      widget.song.value = widget.songs[track.value];
-      widget.songMetaData.value = songData[track.value]!;
-    });
+    // setState(() {
+    widget.song.value = widget.songs[track.value];
+    widget.songMetaData.value = songData[track.value]!;
+    // });
     // widget.audioPlayer.setSourceDeviceFile(widget.song.value);
     widget.audioPlayer.onDurationChanged.listen((newDuration) {
       setState(() {
@@ -141,7 +144,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
-    widget.audioPlayer.dispose();
+    // widget.audioPlayer.dispose();
     super.dispose();
   }
 
@@ -231,7 +234,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.songMetaData.value.title!,
+                          widget.songMetaData.value!.title!,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 13.7),
                         ),
@@ -244,21 +247,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(widget.songMetaData.value.artist!,
+                                Text(widget.songMetaData.value!.artist!,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.7)),
                                 const Divider(
                                   height: 5,
                                 ),
-                                Text(widget.songMetaData.value.album!,
+                                Text(widget.songMetaData.value!.album!,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.7))
                               ],
                             ),
                             Text(
-                                '${widget.songs.indexWhere((element) => element == widget.song.value) + 1} / ${widget.songs.length}',
+                                '${trackFilePaths.value.indexWhere((element) => element == currentTrackPath.value) + 1} / ${trackFilePaths.value.length}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13.7))

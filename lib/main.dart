@@ -13,5 +13,6 @@ void main() async {
   runApp(MaterialApp(
     theme: AppTheme.dark(),
     home: const MusicResources(),
+    debugShowCheckedModeBanner: false,
   ));
 }
