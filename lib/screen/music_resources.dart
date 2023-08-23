@@ -1,47 +1,31 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/music_player_logic_operations.dart';
-import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/pages/albums.dart';
 import 'package:bonga_music/widgets/music_resources_navigation_button.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/playlists.dart';
+import '../repositories/music_File_Paths_Provider.dart';
 
 final audioPlayer = AudioPlayer();
-ValueNotifier<String> currentTrackPath = ValueNotifier('');
-ValueNotifier<int> loopStatus = ValueNotifier(0);
-ValueNotifier<List<String>> trackFilePaths = ValueNotifier([]);
-ValueNotifier<int> playListId = ValueNotifier(0);
 
 //this is the main application widget
-class MusicResources extends StatefulWidget {
+class MusicResources extends ConsumerStatefulWidget {
   const MusicResources({super.key});
 
   @override
-  State<MusicResources> createState() => _MusicResourcesState();
+  ConsumerState<MusicResources> createState() => _MusicResourcesState();
 }
 
-class _MusicResourcesState extends State<MusicResources> {
+class _MusicResourcesState extends ConsumerState<MusicResources> {
   final ValueNotifier<int> pageIndex = ValueNotifier(0);
   final pages = [const AlbumsList(), const PlayListsWidget()];
   List<String> musicFiles = [];
   @override
   void initState() {
     super.initState();
-    //check database for saved music file paths
-    IsarDBServices().getSavedMusicFiles().then((value) {
-      if (value.isEmpty) {
-        MusicAPI().getLocalMusicFiles().then((value) async {
-          await IsarDBServices().getSavedMusicFiles().then((value) =>
-              setState(() => musicFiles = value[0].musicFilePaths ?? []));
-        });
-      }
-      setState(() {
-        musicFiles = value[0].musicFilePaths ?? [];
-        currentTrackPath.value = musicFiles[0];
-      });
-    });
+    setState(() => musicFiles = ref.read(allMusicTrackProvider));
   }
 
   @override
@@ -104,12 +88,9 @@ class _MusicResourcesState extends State<MusicResources> {
                 return pages[value];
               },
             ),
-            musicFiles.isNotEmpty
-                ? Player(
-                    musicFiles: musicFiles,
+            ref.read(allMusicTrackProvider).isNotEmpty
+                ? const Player(
                     screen: null,
-                    currentTrack: currentTrackPath,
-                    playerState: ValueNotifier(false),
                   )
                 : const Center(
                     child: Text("No music files available"),

@@ -1,42 +1,38 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/api/music_player_logic_operations.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/screen/player_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 
 import '../screen/music_resources.dart';
 
-class Player extends StatefulWidget {
+class Player extends ConsumerStatefulWidget {
   const Player({
     super.key,
-    required this.musicFiles,
     required this.screen,
-    required this.currentTrack,
-    required this.playerState,
   });
-  final List<String> musicFiles;
   final String? screen;
-  final ValueNotifier<String> currentTrack;
-  final ValueNotifier<bool> playerState;
-
   @override
-  State<Player> createState() => _PlayerState();
+  ConsumerState<Player> createState() => _PlayerState();
 }
 
-class _PlayerState extends State<Player> {
+class _PlayerState extends ConsumerState<Player> {
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
   String currentPosition = '';
   bool isPlaying = false;
   ValueNotifier<int> track = ValueNotifier(0);
+  ValueNotifier<int> loopStatus = ValueNotifier(0);
   ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
     initializeAudio();
     MusicAPI()
-        .getMusicMetaData(widget.currentTrack.value)
+        .getMusicMetaData(ref.read(currentTrackProvider))
         .then((value) => metaData.value = value);
     audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
@@ -65,60 +61,29 @@ class _PlayerState extends State<Player> {
     audioPlayer.onPlayerComplete.listen((event) {
       if (mounted) {
         track.value += 1;
-        if (track.value == widget.musicFiles.length - 1 &&
+        if (track.value == ref.read(currentMusicFilePathsProvider).length - 1 &&
             loopStatus.value == 2) {
           track.value = 0;
         }
-        widget.currentTrack.value = widget.musicFiles[track.value];
-        updateTrackData(widget.currentTrack.value);
-        audioPlayer.play(UrlSource(currentTrackPath.value));
+        ref.watch(currentTrackProvider.notifier).update(
+            (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+        updateTrackData(ref.read(currentTrackProvider));
+        audioPlayer.play(UrlSource(ref.read(currentTrackProvider)));
       }
     });
-    listenForTrackChanges();
-
     super.initState();
   }
 
   Future initializeAudio() async {
     audioPlayer.setReleaseMode(
         loopStatus.value == 1 ? ReleaseMode.loop : ReleaseMode.release);
-    // widget.currentTrack.value = widget.musicFiles[track.value];
-    // audioPlayer.setSourceDeviceFile(widget.currentTrack.value);
     MusicAPI()
-        .getMusicMetaData(currentTrackPath.value)
+        .getMusicMetaData(ref.read(currentTrackProvider))
         .then((value) => setState(() => metaData.value = value));
-  }
-
-  //this function listens for track changes
-  listenForTrackChanges() {
-    widget.currentTrack.addListener(() async {
-      debugPrint(
-          '*******....................${widget.currentTrack.value}..................*******');
-      updateTrackData(widget.currentTrack.value);
-      if (isPlaying) {
-        await audioPlayer.pause();
-        setState(() {
-          isPlaying = false;
-        });
-        widget.playerState.value = isPlaying;
-      } else {
-        // await audioPlayer.resume();
-        await audioPlayer.play(UrlSource(widget.currentTrack.value));
-
-        if (mounted) {
-          setState(() {
-            isPlaying = true;
-          });
-        }
-        widget.playerState.value = isPlaying;
-      }
-    });
   }
 
 //this function updates track data when user changes track
   updateTrackData(String musicTrack) async {
-    // await audioPlayer.setSourceDeviceFile(musicTrack);
-    setState(() => widget.currentTrack.value = musicTrack);
     MusicAPI()
         .getMusicMetaData(musicTrack)
         .then((value) => metaData.value = value!);
@@ -189,14 +154,11 @@ class _PlayerState extends State<Player> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
-                                      song: widget.currentTrack,
                                       albumArt: metaData.value?.picture!.data,
                                       audioPlayer: audioPlayer,
                                       position: position,
                                       duration: duration,
                                       songMetaData: metaData,
-                                      isPlaying: widget.playerState,
-                                      songs: trackFilePaths.value,
                                     ),
                                   ));
                             },
@@ -218,15 +180,27 @@ class _PlayerState extends State<Player> {
                             IconButton(
                                 onPressed: () {
                                   if (track.value == 0) {
-                                    track.value = widget.musicFiles.length - 1;
-                                    widget.currentTrack.value =
-                                        widget.musicFiles[track.value];
-                                    updateTrackData(widget.currentTrack.value);
+                                    track.value = ref
+                                            .read(currentMusicFilePathsProvider)
+                                            .length -
+                                        1;
+                                    ref
+                                        .read(currentTrackProvider.notifier)
+                                        .update((state) => ref.read(
+                                                currentMusicFilePathsProvider)[
+                                            track.value]);
+                                    updateTrackData(
+                                        ref.read(currentTrackProvider));
                                   } else {
                                     track.value -= 1;
-                                    widget.currentTrack.value =
-                                        widget.musicFiles[track.value];
-                                    updateTrackData(widget.currentTrack.value);
+                                    ref
+                                        .read(currentTrackProvider.notifier)
+                                        .update((state) => ref.read(
+                                                currentMusicFilePathsProvider)[
+                                            track.value]);
+
+                                    updateTrackData(
+                                        ref.read(currentTrackProvider));
                                   }
                                 },
                                 icon: const Icon(
@@ -239,16 +213,20 @@ class _PlayerState extends State<Player> {
                                     setState(() {
                                       isPlaying = false;
                                     });
-                                    widget.playerState.value = isPlaying;
+                                    ref
+                                        .read(playerStateProvider.notifier)
+                                        .update((state) => isPlaying);
                                   } else {
                                     // await audioPlayer.resume();
-                                    await audioPlayer.play(
-                                        UrlSource(widget.currentTrack.value));
+                                    await audioPlayer.play(UrlSource(
+                                        ref.read(currentTrackProvider)));
 
                                     setState(() {
                                       isPlaying = true;
                                     });
-                                    widget.playerState.value = isPlaying;
+                                    ref
+                                        .read(playerStateProvider.notifier)
+                                        .update((state) => isPlaying);
                                   }
                                 },
                                 icon: Icon(isPlaying
@@ -258,13 +236,22 @@ class _PlayerState extends State<Player> {
                             IconButton(
                                 onPressed: () {
                                   if (track.value ==
-                                      widget.musicFiles.length - 1) {
+                                      ref
+                                              .read(
+                                                  currentMusicFilePathsProvider)
+                                              .length -
+                                          1) {
                                     track.value = 0;
                                   }
                                   track.value += 1;
-                                  widget.currentTrack.value =
-                                      widget.musicFiles[track.value];
-                                  updateTrackData(widget.currentTrack.value);
+                                  ref
+                                      .read(currentTrackProvider.notifier)
+                                      .update((state) => ref.read(
+                                              currentMusicFilePathsProvider)[
+                                          track.value]);
+
+                                  updateTrackData(
+                                      ref.read(currentTrackProvider));
                                 },
                                 icon:
                                     const Icon(Icons.arrow_forward_ios_rounded))

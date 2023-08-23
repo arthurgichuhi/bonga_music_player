@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:bonga_music/models/single_track_enum.dart';
-import 'package:bonga_music/screen/music_resources.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:bonga_music/widgets/track_list_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,12 +28,7 @@ class AlbumViewScreen extends StatefulWidget {
 }
 
 class _AlbumViewScreenState extends State<AlbumViewScreen> {
-  // ValueNotifier<String> currentTrack = ValueNotifier('');
   ValueNotifier<bool> playerState = ValueNotifier(false);
-  // ValueNotifier<bool> doneSorting = ValueNotifier(false);
-  // List<Metadata?> songMetatdata = [];
-  // List<String> sortedMusicFilePaths = [];
-  // List<Metadata?> sortedMetadata = [];
   @override
   void initState() {
     // sortMusicList();
@@ -155,19 +149,12 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
           ),
           Expanded(
               child: TrackList(
-            // musicTitles: widget.musicTitle,
-            // trackArtists: widget.trackArtists,
-            // trackDuration: widget.duration,
-            currentTrack: currentTrackPath,
             playerState: playerState,
             musicFilePaths: widget.songs,
             singleTrackEnum: SingleTrackEnum.album,
           )),
-          Player(
-            musicFiles: widget.songs,
+          const Player(
             screen: null,
-            currentTrack: currentTrackPath,
-            playerState: playerState,
           ),
         ],
       ),

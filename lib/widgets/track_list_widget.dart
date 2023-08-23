@@ -1,32 +1,26 @@
 import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/models/single_track_enum.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/widgets/single_track_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 
-class TrackList extends StatefulWidget {
+class TrackList extends ConsumerStatefulWidget {
   const TrackList(
       {super.key,
       required this.musicFilePaths,
-      // required this.musicTitles,
-      // required this.trackArtists,
-      // required this.trackDuration,
-      required this.currentTrack,
       required this.playerState,
       required this.singleTrackEnum});
   final List<String> musicFilePaths;
-  // final List<String?> musicTitles;
-  // final List<String> trackArtists;
-  // final List<double?> trackDuration;
-  final ValueNotifier<String> currentTrack;
   final ValueNotifier<bool> playerState;
   final SingleTrackEnum singleTrackEnum;
 
   @override
-  State<TrackList> createState() => _TrackListState();
+  ConsumerState<TrackList> createState() => _TrackListState();
 }
 
-class _TrackListState extends State<TrackList> {
+class _TrackListState extends ConsumerState<TrackList> {
   List<Metadata?> songMetatdata = [];
   List<String> sortedMusicFilePaths = [];
   List<Metadata?> sortedMetadata = [];
@@ -82,27 +76,33 @@ class _TrackListState extends State<TrackList> {
         });
       }
     }
+    //Updating State to current sorted music file paths
+    ref
+        .read(currentMusicFilePathsProvider.notifier)
+        .update((state) => sortedMusicFilePaths);
+    //Updating State to current sorted music file paths metadata
+    ref
+        .read(currentFilePathsMetadataProvider.notifier)
+        .update((state) => sortedMetadata);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.currentTrack,
-      builder: (context, value, _) {
-        return ListView.builder(
-          itemCount: sortedMusicFilePaths.length,
-          itemBuilder: (context, index) {
-            return SingleTrack(
-              currentTrack: widget.currentTrack,
-              myTrackPath: sortedMusicFilePaths[index],
-              trackTitle: sortedMetadata[index]!.title!,
-              trackArtist: sortedMetadata[index]!.artist!,
-              playerState: widget.playerState,
-              musicFiles: sortedMusicFilePaths,
-              singleTrackEnum: widget.singleTrackEnum,
-              callBack: [],
-            );
-          },
+    return ListView.builder(
+      itemCount: ref.read(currentMusicFilePathsProvider).length,
+      itemBuilder: (context, index) {
+        return SingleTrack(
+          // currentTrack: widget.currentTrack,
+          myTrackPath: ref.read(currentMusicFilePathsProvider)[index],
+          trackTitle:
+              ref.read(currentFilePathsMetadataProvider)[index]?.title ??
+                  "Unknown",
+          trackArtist:
+              ref.read(currentFilePathsMetadataProvider)[index]?.artist ??
+                  "Unknown",
+          musicFiles: sortedMusicFilePaths,
+          singleTrackEnum: widget.singleTrackEnum,
+          tracksCount: null,
         );
       },
     );

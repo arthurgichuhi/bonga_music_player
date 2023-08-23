@@ -2,18 +2,20 @@ import 'dart:typed_data';
 import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/database/playlists/playlist.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/widgets/album_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 
-class AlbumsList extends StatefulWidget {
+class AlbumsList extends ConsumerStatefulWidget {
   const AlbumsList({super.key});
 
   @override
-  State<AlbumsList> createState() => _AlbumsListState();
+  ConsumerState<AlbumsList> createState() => _AlbumsListState();
 }
 
-class _AlbumsListState extends State<AlbumsList> {
+class _AlbumsListState extends ConsumerState<AlbumsList> {
   //this array holds the file path data to music files in the music folder
   List<String> musicFiles = [];
   //Music files metadata
@@ -37,24 +39,32 @@ class _AlbumsListState extends State<AlbumsList> {
   @override
   void initState() {
     super.initState();
-    //this section of code in initializing the music file path data from music folder
-    IsarDBServices().getSavedMusicFiles().then((value) async {
-      musicFiles = value[0].musicFilePaths!;
-      if (musicFiles.isNotEmpty) {
-        for (var musicFile in musicFiles) {
-          await MusicAPI()
-              .getMusicMetaData(musicFile)
-              .then((value) => musicFilesMetadata.add(value));
-        }
+    initializeMusicFiles();
+  }
+
+//Intializes music files and their metadata
+  void initializeMusicFiles() async {
+    //first checking whether if allMusicTrackProvider is empty
+    // and if so setting the music list to read from the database
+    //and if not read from the provider
+    ref.read(allMusicTrackProvider).isEmpty
+        ? IsarDBServices().getSavedMusicFiles().then(
+            (value) => setState(() => musicFiles = value[0].musicFilePaths!))
+        : setState(() => musicFiles = ref.read(allMusicTrackProvider));
+    //getting music metadata
+    if (musicFiles.isNotEmpty) {
+      for (var musicFile in musicFiles) {
+        await MusicAPI()
+            .getMusicMetaData(musicFile)
+            .then((value) => musicFilesMetadata.add(value));
       }
-      for (var metadata in musicFilesMetadata) {
-        musicAlbums.add(metadata?.album ?? "Unknown");
-      }
-      debugPrint(
-          "Music files:${musicFiles.length} Metadata:${musicFilesMetadata.length} MusicAlbums:${musicAlbums.length}");
-      setupAlbumList();
-      getUserPlayListData().then((value) => setState(() => playLists = value));
-    });
+    }
+    //getting individual albums
+    for (var metadata in musicFilesMetadata) {
+      musicAlbums.add(metadata?.album ?? "Unknown");
+    }
+    setupAlbumList();
+    getUserPlayListData().then((value) => setState(() => playLists = value));
   }
 
   //this function section setups the album list

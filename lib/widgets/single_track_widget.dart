@@ -1,49 +1,35 @@
 import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/database/playlists/playlist.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/single_track_enum.dart';
-import '../screen/music_resources.dart';
 
-class SingleTrack extends StatefulWidget {
+class SingleTrack extends ConsumerStatefulWidget {
   const SingleTrack(
       {super.key,
-      required this.currentTrack,
-      required this.playerState,
       required this.myTrackPath,
       required this.trackTitle,
       required this.trackArtist,
       required this.musicFiles,
       required this.singleTrackEnum,
-      required this.callBack});
-  final ValueNotifier<String> currentTrack;
-  final ValueNotifier<bool> playerState;
+      required this.tracksCount});
   final String myTrackPath;
   final String trackTitle;
   final String trackArtist;
   final List<String> musicFiles;
   final SingleTrackEnum singleTrackEnum;
-  final List<VoidCallback> callBack;
+  final ValueChanged<int>? tracksCount;
 
   @override
-  State<SingleTrack> createState() => _SingleTrackState();
+  ConsumerState<SingleTrack> createState() => _SingleTrackState();
 }
 
-class _SingleTrackState extends State<SingleTrack> {
-  // ValueNotifier<String> currentTrack = ValueNotifier('');
+class _SingleTrackState extends ConsumerState<SingleTrack> {
   @override
   void initState() {
-    valueChangeListener();
     super.initState();
-
-    // valueChangeListener();
-  }
-
-  valueChangeListener() {
-    currentTrackPath.addListener(() {
-      debugPrint(
-          'single track .........................${widget.currentTrack.value}');
-    });
   }
 
   @override
@@ -52,9 +38,16 @@ class _SingleTrackState extends State<SingleTrack> {
       padding: const EdgeInsets.all(8.0),
       child: InkWell(
         onTap: () {
-          widget.currentTrack.value = widget.myTrackPath;
-          widget.playerState.value = true;
-          trackFilePaths.value = widget.musicFiles;
+          //Updating current music track
+          ref
+              .read(currentTrackProvider.notifier)
+              .update((state) => widget.myTrackPath);
+          //Updating play state bool
+          ref.read(playerStateProvider.notifier).update((state) => true);
+          //Updating all File paths of selected playlist or album
+          ref
+              .read(currentMusicFilePathsProvider.notifier)
+              .update((state) => widget.musicFiles);
         },
         child: SizedBox(
           child:
@@ -70,9 +63,10 @@ class _SingleTrackState extends State<SingleTrack> {
                     widget.trackTitle,
                     style: TextStyle(
                         overflow: TextOverflow.ellipsis,
-                        color: currentTrackPath.value == widget.myTrackPath
-                            ? AppColors.accent
-                            : null),
+                        color:
+                            ref.read(currentTrackProvider) == widget.myTrackPath
+                                ? AppColors.accent
+                                : null),
                   ),
                   Text(widget.trackArtist)
                 ],
@@ -89,7 +83,7 @@ class _SingleTrackState extends State<SingleTrack> {
                             child: const Text('Remove'),
                             onTap: () async {
                               await IsarDBServices()
-                                  .getPlayListData(playListId.value)
+                                  .getPlayListData(ref.read(playListIdDb)!)
                                   .then((value) async {
                                 List<String> newTrackList = [];
                                 PlayLists playLists = PlayLists();
@@ -103,12 +97,12 @@ class _SingleTrackState extends State<SingleTrack> {
                                 playLists.play_list_songs = newTrackList;
                                 await IsarDBServices()
                                     .savePlayListData(playLists: playLists);
-                                widget.callBack[0];
+                                widget.tracksCount?.call(newTrackList.length);
                               });
                             },
                           )
                         ])
-                : SizedBox()
+                : const SizedBox()
           ]),
         ),
       ),
