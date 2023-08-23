@@ -1,6 +1,8 @@
+import 'package:bonga_music/database/db_api/db_operations_api.dart';
+import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/material.dart';
-
+import '../models/single_track_enum.dart';
 import '../screen/music_resources.dart';
 
 class SingleTrack extends StatefulWidget {
@@ -11,13 +13,17 @@ class SingleTrack extends StatefulWidget {
       required this.myTrackPath,
       required this.trackTitle,
       required this.trackArtist,
-      required this.musicFiles});
+      required this.musicFiles,
+      required this.singleTrackEnum,
+      required this.callBack});
   final ValueNotifier<String> currentTrack;
   final ValueNotifier<bool> playerState;
   final String myTrackPath;
   final String trackTitle;
   final String trackArtist;
   final List<String> musicFiles;
+  final SingleTrackEnum singleTrackEnum;
+  final List<VoidCallback> callBack;
 
   @override
   State<SingleTrack> createState() => _SingleTrackState();
@@ -51,12 +57,8 @@ class _SingleTrackState extends State<SingleTrack> {
           trackFilePaths.value = widget.musicFiles;
         },
         child: SizedBox(
-          child: Row(children: [
-            // Icon(currentTrackPath.value != widget.myTrackPath
-            //     ? CupertinoIcons.play
-            //     : widget.playerState.value
-            //         ? CupertinoIcons.pause
-            //         : CupertinoIcons.play),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             ConstrainedBox(
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width,
@@ -72,13 +74,41 @@ class _SingleTrackState extends State<SingleTrack> {
                             ? AppColors.accent
                             : null),
                   ),
-                  // const Divider(
-                  //   height: 2,
-                  // ),
                   Text(widget.trackArtist)
                 ],
               ),
-            )
+            ),
+            widget.singleTrackEnum == SingleTrackEnum.playlist
+                ? PopupMenuButton(
+                    itemBuilder: (context) => <PopupMenuEntry>[
+                          PopupMenuItem(
+                            child: const Text('Edit Tags'),
+                            onTap: () {},
+                          ),
+                          PopupMenuItem(
+                            child: const Text('Remove'),
+                            onTap: () async {
+                              await IsarDBServices()
+                                  .getPlayListData(playListId.value)
+                                  .then((value) async {
+                                List<String> newTrackList = [];
+                                PlayLists playLists = PlayLists();
+                                playLists.id = value!.id;
+                                playLists.playListName = value.playListName;
+                                for (var track in value.play_list_songs!) {
+                                  if (track != widget.myTrackPath) {
+                                    newTrackList.add(track);
+                                  }
+                                }
+                                playLists.play_list_songs = newTrackList;
+                                await IsarDBServices()
+                                    .savePlayListData(playLists: playLists);
+                                widget.callBack[0];
+                              });
+                            },
+                          )
+                        ])
+                : SizedBox()
           ]),
         ),
       ),

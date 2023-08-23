@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/glowing_action_button.dart';
 import 'package:flutter/cupertino.dart';

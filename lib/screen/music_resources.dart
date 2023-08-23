@@ -1,15 +1,18 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/api/music_player_logic_operations.dart';
+import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/pages/albums.dart';
-import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/music_resources_navigation_button.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:flutter/material.dart';
+
+import '../pages/playlists.dart';
 
 final audioPlayer = AudioPlayer();
 ValueNotifier<String> currentTrackPath = ValueNotifier('');
 ValueNotifier<int> loopStatus = ValueNotifier(0);
 ValueNotifier<List<String>> trackFilePaths = ValueNotifier([]);
+ValueNotifier<int> playListId = ValueNotifier(0);
 
 //this is the main application widget
 class MusicResources extends StatefulWidget {
@@ -21,24 +24,22 @@ class MusicResources extends StatefulWidget {
 
 class _MusicResourcesState extends State<MusicResources> {
   final ValueNotifier<int> pageIndex = ValueNotifier(0);
-  final pages = [const AlbumsList()];
+  final pages = [const AlbumsList(), const PlayListsWidget()];
   List<String> musicFiles = [];
-  List<dynamic> musicAlbums = [];
   @override
   void initState() {
     super.initState();
-    MusicAPI().getLocalMusicFiles().then((value) {
-      setState(() {
-        musicFiles = value;
-        currentTrackPath.value = musicFiles[0];
-        // for (int i = 0; i <= musicFiles.length; i++) {
-        //   trackFilePaths.value.add({'${i + 1}': musicFiles[i]});
-        // }
-      });
-      MusicAPI().getMusicAlbums(musicFiles).then((value) {
-        setState(() {
-          musicAlbums = value;
+    //check database for saved music file paths
+    IsarDBServices().getSavedMusicFiles().then((value) {
+      if (value.isEmpty) {
+        MusicAPI().getLocalMusicFiles().then((value) async {
+          await IsarDBServices().getSavedMusicFiles().then((value) =>
+              setState(() => musicFiles = value[0].musicFilePaths ?? []));
         });
+      }
+      setState(() {
+        musicFiles = value[0].musicFilePaths ?? [];
+        currentTrackPath.value = musicFiles[0];
       });
     });
   }
@@ -110,8 +111,8 @@ class _MusicResourcesState extends State<MusicResources> {
                     currentTrack: currentTrackPath,
                     playerState: ValueNotifier(false),
                   )
-                : const CircularProgressIndicator(
-                    color: AppColors.accent,
+                : const Center(
+                    child: Text("No music files available"),
                   )
           ],
         ),

@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/screen/player_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
@@ -31,13 +31,13 @@ class _PlayerState extends State<Player> {
   String currentPosition = '';
   bool isPlaying = false;
   ValueNotifier<int> track = ValueNotifier(0);
-  ValueNotifier<Metadata> metaData = ValueNotifier(const Metadata());
+  ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
     initializeAudio();
     MusicAPI()
         .getMusicMetaData(widget.currentTrack.value)
-        .then((value) => metaData.value = value!);
+        .then((value) => metaData.value = value);
     audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() {
@@ -86,7 +86,7 @@ class _PlayerState extends State<Player> {
     // audioPlayer.setSourceDeviceFile(widget.currentTrack.value);
     MusicAPI()
         .getMusicMetaData(currentTrackPath.value)
-        .then((value) => setState(() => metaData.value = value!));
+        .then((value) => setState(() => metaData.value = value));
   }
 
   //this function listens for track changes
@@ -190,7 +190,7 @@ class _PlayerState extends State<Player> {
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
                                       song: widget.currentTrack,
-                                      albumArt: metaData.value.picture!.data,
+                                      albumArt: metaData.value?.picture!.data,
                                       audioPlayer: audioPlayer,
                                       position: position,
                                       duration: duration,
@@ -205,12 +205,8 @@ class _PlayerState extends State<Player> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(metaData.value.title != null
-                                    ? metaData.value.title!
-                                    : 'Unknown'),
-                                Text(metaData.value.artist != null
-                                    ? metaData.value.artist!
-                                    : 'Unknown'),
+                                Text(metaData.value?.title ?? 'Unknown'),
+                                Text(metaData.value?.artist ?? 'Unknown'),
                               ],
                             ),
                           ),
@@ -276,11 +272,11 @@ class _PlayerState extends State<Player> {
                         ),
                         Hero(
                             tag: 'hero-album-art',
-                            child: metaData.value.picture != null
+                            child: metaData.value?.picture != null
                                 ? Padding(
                                     padding: const EdgeInsets.only(right: 3),
                                     child: Image.memory(
-                                      metaData.value.picture!.data,
+                                      metaData.value!.picture!.data,
                                       height: 59,
                                     ),
                                   )

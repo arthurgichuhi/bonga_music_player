@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bonga_music/models/single_track_enum.dart';
 import 'package:bonga_music/screen/music_resources.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:bonga_music/widgets/track_list_widget.dart';
@@ -154,12 +155,13 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
           ),
           Expanded(
               child: TrackList(
-            musicTitles: widget.musicTitle,
-            trackArtists: widget.trackArtists,
-            trackDuration: widget.duration,
+            // musicTitles: widget.musicTitle,
+            // trackArtists: widget.trackArtists,
+            // trackDuration: widget.duration,
             currentTrack: currentTrackPath,
             playerState: playerState,
             musicFilePaths: widget.songs,
+            singleTrackEnum: SingleTrackEnum.album,
           )),
           Player(
             musicFiles: widget.songs,

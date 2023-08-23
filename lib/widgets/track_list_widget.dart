@@ -1,4 +1,5 @@
-import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/api/music_player_logic_operations.dart';
+import 'package:bonga_music/models/single_track_enum.dart';
 import 'package:bonga_music/widgets/single_track_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_god/metadata_god.dart';
@@ -7,17 +8,19 @@ class TrackList extends StatefulWidget {
   const TrackList(
       {super.key,
       required this.musicFilePaths,
-      required this.musicTitles,
-      required this.trackArtists,
-      required this.trackDuration,
+      // required this.musicTitles,
+      // required this.trackArtists,
+      // required this.trackDuration,
       required this.currentTrack,
-      required this.playerState});
+      required this.playerState,
+      required this.singleTrackEnum});
   final List<String> musicFilePaths;
-  final List<String?> musicTitles;
-  final List<String> trackArtists;
-  final List<double?> trackDuration;
+  // final List<String?> musicTitles;
+  // final List<String> trackArtists;
+  // final List<double?> trackDuration;
   final ValueNotifier<String> currentTrack;
   final ValueNotifier<bool> playerState;
+  final SingleTrackEnum singleTrackEnum;
 
   @override
   State<TrackList> createState() => _TrackListState();
@@ -61,11 +64,13 @@ class _TrackListState extends State<TrackList> {
             .getMusicMetaData(file)
             .then((value) => temporarySorter.add(value));
       }
+      // if (widget.singleTrackEnum != SingleTrackEnum.playlist) {
       temporarySorter.sort((a, b) {
         int aTrack = a!.trackNumber!;
         int bTrack = b!.trackNumber!;
         return aTrack.compareTo(bTrack);
       });
+      // }
       for (var data in temporarySorter) {
         debugPrint(
             '........${data!.title}...................${data.trackNumber}===================');
@@ -94,6 +99,8 @@ class _TrackListState extends State<TrackList> {
               trackArtist: sortedMetadata[index]!.artist!,
               playerState: widget.playerState,
               musicFiles: sortedMusicFilePaths,
+              singleTrackEnum: widget.singleTrackEnum,
+              callBack: [],
             );
           },
         );

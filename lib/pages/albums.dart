@@ -1,9 +1,10 @@
 import 'dart:typed_data';
-import 'package:bonga_music/api/songs.dart';
+import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:bonga_music/widgets/album_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:metadata_god/metadata_god.dart';
 
 class AlbumsList extends StatefulWidget {
   const AlbumsList({super.key});
@@ -15,18 +16,10 @@ class AlbumsList extends StatefulWidget {
 class _AlbumsListState extends State<AlbumsList> {
   //this array holds the file path data to music files in the music folder
   List<String> musicFiles = [];
-  //this functions music title data
-  List<String> musicTitles = [];
-  //this array holds the individual track artist
-  List<String> trackArtists = [];
+  //Music files metadata
+  List<Metadata?> musicFilesMetadata = [];
   //this array holds album data as extracted from the music files array data
   List<String> musicAlbums = [];
-  //tis List holds duration data for each music file path
-  List<double?> musicDuration = [];
-  //this list holds the Album artist data
-  List<String> albumArtists = [];
-  //this list of type Map<String?,U8intlist?> holds the album name and picture data
-  List<Uint8List?> albumArt = [];
   //this List holds the album Name,Artist Name,Music File path,Music Duration
   // and album Art data for sorting in the setupAlbumList function
   List<Map<String, dynamic>> inputDataSort = [];
@@ -39,64 +32,43 @@ class _AlbumsListState extends State<AlbumsList> {
   }
 
   //List of user playlists
-  List<PlayLists> plaLists = [];
+  List<PlayLists> playLists = [];
 
   @override
   void initState() {
     super.initState();
     //this section of code in initializing the music file path data from music folder
-    MusicAPI().getLocalMusicFiles().then((value) async {
-      setState(() {
-        musicFiles = value;
-      });
-      //this sections retrieves song title data
-      await MusicAPI()
-          .getMusicTitles(musicFiles)
-          .then((value) => setState(() => musicTitles = value));
-      //this section creates a list of the album data from the music file path data
-      await MusicAPI().getMusicAlbums(musicFiles).then((value) async {
-        setState(() {
-          musicAlbums = value;
-        });
-      });
-      //this section sets the individual track artist data
-      await MusicAPI()
-          .getTrackArtist(musicFiles)
-          .then((value) => setState(() => trackArtists = value));
-      //this sections sets the album artist data
-      await MusicAPI().getAlbumArtist(musicFiles).then((value) {
-        setState(() {
-          albumArtists = value;
-        });
-      });
-
-      await MusicAPI()
-          .getMusicDuration(musicFiles)
-          .then((value) => setState(() => musicDuration = value));
-
-      //this section retrieves the album name data and picture in map format
-      await MusicAPI().getAlbumArt(musicFiles).then((value) {
-        setState(() {
-          albumArt = value;
-        });
-      });
+    IsarDBServices().getSavedMusicFiles().then((value) async {
+      musicFiles = value[0].musicFilePaths!;
+      if (musicFiles.isNotEmpty) {
+        for (var musicFile in musicFiles) {
+          await MusicAPI()
+              .getMusicMetaData(musicFile)
+              .then((value) => musicFilesMetadata.add(value));
+        }
+      }
+      for (var metadata in musicFilesMetadata) {
+        musicAlbums.add(metadata?.album ?? "Unknown");
+      }
+      debugPrint(
+          "Music files:${musicFiles.length} Metadata:${musicFilesMetadata.length} MusicAlbums:${musicAlbums.length}");
       setupAlbumList();
-      getUserPlayListData().then((value) => setState(() => plaLists = value));
+      getUserPlayListData().then((value) => setState(() => playLists = value));
     });
   }
 
   //this function section setups the album list
   void setupAlbumList() {
     List<String> uniqueAlbumList = musicAlbums.toSet().toList();
-    for (int x = 0; x <= albumArt.length - 1; x++) {
+    for (int x = 0; x <= musicFilesMetadata.length - 1; x++) {
       inputDataSort.add({
-        'album': musicAlbums[x],
-        'albumArtist': albumArtists[x],
-        'albumArt': albumArt[x],
+        'album': musicFilesMetadata[x]?.album ?? "Unknown",
+        'albumArtist': musicFilesMetadata[x]?.albumArtist ?? "Unknown",
+        'albumArt': musicFilesMetadata[x]?.picture?.data,
         'song': musicFiles[x],
-        'duration': musicDuration[x],
-        'title': musicTitles[x],
-        'trackArtist': trackArtists[x]
+        'duration': musicFilesMetadata[x]?.durationMs,
+        'title': musicFilesMetadata[x]?.title ?? "Unknown",
+        'trackArtist': musicFilesMetadata[x]?.artist ?? "Unknown"
       });
     }
     for (int x = 0; x <= uniqueAlbumList.length - 1; x++) {
@@ -127,11 +99,6 @@ class _AlbumsListState extends State<AlbumsList> {
       });
     }
     outPutDataSort.toSet().toList();
-
-    for (var sorted in outPutDataSort) {
-      debugPrint(
-          '${sorted['album']}..............${sorted['trackArtists'].length}......${sorted['songs'].length}');
-    }
   }
 
   @override
@@ -156,7 +123,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   songDuration: outPutDataSort[indexes[index]]['duration'],
                   musicTitles: outPutDataSort[indexes[index]]['title'],
                   trackArtist: outPutDataSort[indexes[index]]['trackArtists'],
-                  playlists: plaLists,
+                  playlists: playLists,
                 ),
                 AlbumWidget(
                   albumArt: outPutDataSort[indexes[index] + 1]['albumArt'],
@@ -167,7 +134,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   musicTitles: outPutDataSort[indexes[index] + 1]['title'],
                   trackArtist: outPutDataSort[indexes[index] + 1]
                       ['trackArtists'],
-                  playlists: plaLists,
+                  playlists: playLists,
                 ),
                 AlbumWidget(
                   albumArt: outPutDataSort[indexes[index] + 2]['albumArt'],
@@ -178,7 +145,7 @@ class _AlbumsListState extends State<AlbumsList> {
                   musicTitles: outPutDataSort[indexes[index] + 2]['title'],
                   trackArtist: outPutDataSort[indexes[index] + 2]
                       ['trackArtists'],
-                  playlists: plaLists,
+                  playlists: playLists,
                 )
               ],
             );
