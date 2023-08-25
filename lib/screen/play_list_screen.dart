@@ -17,9 +17,6 @@ class PlayListsScreen extends StatefulWidget {
 }
 
 class _PlayListsScreenState extends State<PlayListsScreen> {
-  //listen to changes of player widget play state
-  // ValueNotifier<bool> playerState = ValueNotifier(false);
-  //listen to changes in number of playlist tracks
   ValueNotifier<int> playListTrackNo = ValueNotifier(0);
   Stream<PlayLists?>? playListStreamData;
   PlayLists? playLists;
@@ -28,12 +25,16 @@ class _PlayListsScreenState extends State<PlayListsScreen> {
   @override
   void initState() {
     debugPrint("+++++++++++++++++++++Rebuilding+++++++++++++++++++++++++");
-    IsarDBServices()
+    getMusicFiles();
+
+    super.initState();
+  }
+
+  void getMusicFiles() async {
+    await IsarDBServices()
         .getPlayListData(widget.playListData.id)
         .then((value) => setState(() => musicFiles = value!.play_list_songs!))
         .then((value) => getMusicMetadata(musicFiles: musicFiles));
-
-    super.initState();
   }
 
   getMusicMetadata({required List<String> musicFiles}) async {
@@ -51,52 +52,34 @@ class _PlayListsScreenState extends State<PlayListsScreen> {
           title: Text('${widget.playListData.playListName}'),
           centerTitle: true,
         ),
-        body: ValueListenableBuilder(
-          valueListenable: playListTrackNo,
-          builder: (context, value, _) {
-            return Column(
-              children: [
-                Expanded(
-                  child: musicFiles.isNotEmpty &&
-                          musicMetadata.isNotEmpty &&
-                          musicMetadata.length == musicFiles.length
-                      ? StreamBuilder(
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return ListView.builder(
-                                itemCount: musicFiles.length,
-                                itemBuilder: (context, index) => SingleTrack(
-                                  myTrackPath: widget
-                                      .playListData.play_list_songs![index],
-                                  trackTitle:
-                                      musicMetadata[index]?.title ?? "Unknown",
-                                  trackArtist:
-                                      musicMetadata[index]?.artist ?? "Unknown",
-                                  musicFiles:
-                                      widget.playListData.play_list_songs!,
-                                  singleTrackEnum: SingleTrackEnum.playlist,
-                                  tracksCount: (value) {
-                                    playListTrackNo.value = value;
-                                    widget.musicFilesNo.call(value);
-                                    setState(() {});
-                                  },
-                                ),
-                              );
-                            } else {
-                              return const Center(
-                                child: Text('Empty'),
-                              );
-                            }
-                          },
-                        )
-                      : const Center(child: CircularProgressIndicator()),
-                ),
-                const Player(
-                  screen: null,
-                )
-              ],
-            );
-          },
+        body: Column(
+          children: [
+            Expanded(
+              child: musicFiles.isNotEmpty &&
+                      musicMetadata.isNotEmpty &&
+                      musicMetadata.length == musicFiles.length
+                  ? ListView.builder(
+                      itemCount: musicFiles.length,
+                      itemBuilder: (context, index) => SingleTrack(
+                        myTrackPath:
+                            widget.playListData.play_list_songs![index],
+                        trackTitle: musicMetadata[index]?.title ?? "Unknown",
+                        trackArtist: musicMetadata[index]?.artist ?? "Unknown",
+                        musicFiles: widget.playListData.play_list_songs!,
+                        singleTrackEnum: SingleTrackEnum.playlist,
+                        tracksCount: (value) {
+                          playListTrackNo.value = value;
+                          widget.musicFilesNo.call(value);
+                          setState(() {});
+                        },
+                      ),
+                    )
+                  : const Center(child: CircularProgressIndicator()),
+            ),
+            const Player(
+              screen: null,
+            )
+          ],
         ));
   }
 }

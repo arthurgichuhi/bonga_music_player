@@ -21,11 +21,12 @@ class MusicResources extends ConsumerStatefulWidget {
 class _MusicResourcesState extends ConsumerState<MusicResources> {
   final ValueNotifier<int> pageIndex = ValueNotifier(0);
   final pages = [const AlbumsList(), const PlayListsWidget()];
-  List<String> musicFiles = [];
+  // List<String> musicFiles = [];
   @override
   void initState() {
+    // initializeMusicFiles();
+    // setState(() => musicFiles = ref.read(allMusicTrackProvider));
     super.initState();
-    setState(() => musicFiles = ref.read(allMusicTrackProvider));
   }
 
   @override
@@ -88,7 +89,7 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
                 return pages[value];
               },
             ),
-            ref.read(allMusicTrackProvider).isNotEmpty
+            ref.read(currentTrackProvider).isNotEmpty
                 ? const Player(
                     screen: null,
                   )

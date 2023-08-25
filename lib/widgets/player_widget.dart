@@ -1,5 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/screen/player_screen.dart';
 import 'package:bonga_music/theme.dart';
@@ -30,10 +29,8 @@ class _PlayerState extends ConsumerState<Player> {
   ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
+    debugPrint("Playlist player widget ${ref.read(currentTrackProvider)}");
     initializeAudio();
-    MusicAPI()
-        .getMusicMetaData(ref.read(currentTrackProvider))
-        .then((value) => metaData.value = value);
     audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() {
@@ -74,36 +71,11 @@ class _PlayerState extends ConsumerState<Player> {
     super.initState();
   }
 
+//Intitialzie audio player
   Future initializeAudio() async {
-    audioPlayer.setReleaseMode(
-        loopStatus.value == 1 ? ReleaseMode.loop : ReleaseMode.release);
-    MusicAPI()
-        .getMusicMetaData(ref.read(currentTrackProvider))
-        .then((value) => setState(() => metaData.value = value));
-  }
-
-//this function updates track data when user changes track
-  updateTrackData(String musicTrack) async {
-    MusicAPI()
-        .getMusicMetaData(musicTrack)
-        .then((value) => metaData.value = value!);
-
-    audioPlayer.onDurationChanged.listen((newDuration) {
-      if (mounted) {
-        setState(() {
-          duration = newDuration;
-        });
-      }
-    });
-
-    audioPlayer.onPositionChanged.listen((newPosition) {
-      if (mounted) {
-        setState(() {
-          position = newPosition;
-          currentPosition = '${position.inMinutes}:${position.inSeconds % 60}';
-        });
-      }
-    });
+    audioPlayer.setReleaseMode(ref.read(loopingStatusProvider) == 1
+        ? ReleaseMode.loop
+        : ReleaseMode.release);
   }
 
   @override
@@ -167,8 +139,28 @@ class _PlayerState extends ConsumerState<Player> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(metaData.value?.title ?? 'Unknown'),
-                                Text(metaData.value?.artist ?? 'Unknown'),
+                                //track title
+                                Text(ref
+                                        .read(musicFilePathMetadataProvider)
+                                        .where((element) =>
+                                            element.keys.first ==
+                                            ref.read(currentTrackProvider))
+                                        .first
+                                        .values
+                                        .first
+                                        ?.title ??
+                                    "Unknown"),
+                                //track Artist(s)
+                                Text(ref
+                                        .read(musicFilePathMetadataProvider)
+                                        .where((element) =>
+                                            element.keys.first ==
+                                            ref.read(currentTrackProvider))
+                                        .first
+                                        .values
+                                        .first
+                                        ?.artist ??
+                                    "Unknown"),
                               ],
                             ),
                           ),
@@ -178,81 +170,18 @@ class _PlayerState extends ConsumerState<Player> {
                           children: [
                             //this button triggers the player to move to the previous music file in the list
                             IconButton(
-                                onPressed: () {
-                                  if (track.value == 0) {
-                                    track.value = ref
-                                            .read(currentMusicFilePathsProvider)
-                                            .length -
-                                        1;
-                                    ref
-                                        .read(currentTrackProvider.notifier)
-                                        .update((state) => ref.read(
-                                                currentMusicFilePathsProvider)[
-                                            track.value]);
-                                    updateTrackData(
-                                        ref.read(currentTrackProvider));
-                                  } else {
-                                    track.value -= 1;
-                                    ref
-                                        .read(currentTrackProvider.notifier)
-                                        .update((state) => ref.read(
-                                                currentMusicFilePathsProvider)[
-                                            track.value]);
-
-                                    updateTrackData(
-                                        ref.read(currentTrackProvider));
-                                  }
-                                },
+                                onPressed: () => previousTrack(),
                                 icon: const Icon(
                                     Icons.arrow_back_ios_new_rounded)),
                             //this button triggers play and pause of playing music audio file
                             IconButton(
-                                onPressed: () async {
-                                  if (isPlaying) {
-                                    await audioPlayer.pause();
-                                    setState(() {
-                                      isPlaying = false;
-                                    });
-                                    ref
-                                        .read(playerStateProvider.notifier)
-                                        .update((state) => isPlaying);
-                                  } else {
-                                    // await audioPlayer.resume();
-                                    await audioPlayer.play(UrlSource(
-                                        ref.read(currentTrackProvider)));
-
-                                    setState(() {
-                                      isPlaying = true;
-                                    });
-                                    ref
-                                        .read(playerStateProvider.notifier)
-                                        .update((state) => isPlaying);
-                                  }
-                                },
+                                onPressed: () => playOrPause(),
                                 icon: Icon(isPlaying
                                     ? CupertinoIcons.pause_fill
                                     : CupertinoIcons.play_fill)),
                             //this button is to play the next track on the list
                             IconButton(
-                                onPressed: () {
-                                  if (track.value ==
-                                      ref
-                                              .read(
-                                                  currentMusicFilePathsProvider)
-                                              .length -
-                                          1) {
-                                    track.value = 0;
-                                  }
-                                  track.value += 1;
-                                  ref
-                                      .read(currentTrackProvider.notifier)
-                                      .update((state) => ref.read(
-                                              currentMusicFilePathsProvider)[
-                                          track.value]);
-
-                                  updateTrackData(
-                                      ref.read(currentTrackProvider));
-                                },
+                                onPressed: () => nextTrack(),
                                 icon:
                                     const Icon(Icons.arrow_forward_ios_rounded))
                           ],
@@ -282,5 +211,72 @@ class _PlayerState extends ConsumerState<Player> {
         ],
       ),
     );
+  }
+
+//this function updates track data when user changes track
+  updateTrackData(String musicTrack) async {
+    audioPlayer.onDurationChanged.listen((newDuration) {
+      if (mounted) {
+        setState(() {
+          duration = newDuration;
+        });
+      }
+    });
+
+    audioPlayer.onPositionChanged.listen((newPosition) {
+      if (mounted) {
+        setState(() {
+          position = newPosition;
+          currentPosition = '${position.inMinutes}:${position.inSeconds % 60}';
+        });
+      }
+    });
+  }
+
+//Got to previous Track
+  void previousTrack() {
+    if (track.value == 0) {
+      track.value = ref.read(currentMusicFilePathsProvider).length - 1;
+      ref.read(currentTrackProvider.notifier).update(
+          (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+      updateTrackData(ref.read(currentTrackProvider));
+    } else {
+      track.value -= 1;
+      ref.read(currentTrackProvider.notifier).update(
+          (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+
+      updateTrackData(ref.read(currentTrackProvider));
+    }
+  }
+
+//Play or Pause track
+  void playOrPause() async {
+    if (isPlaying) {
+      await audioPlayer.pause();
+      setState(() {
+        isPlaying = false;
+      });
+      ref.read(playerStateProvider.notifier).update((state) => isPlaying);
+    } else {
+      // await audioPlayer.resume();
+      await audioPlayer.play(UrlSource(ref.read(currentTrackProvider)));
+
+      setState(() {
+        isPlaying = true;
+      });
+      ref.read(playerStateProvider.notifier).update((state) => isPlaying);
+    }
+  }
+
+//Go to next Track
+  void nextTrack() {
+    if (track.value == ref.read(currentMusicFilePathsProvider).length - 1) {
+      track.value = 0;
+    }
+    track.value += 1;
+    ref.read(currentTrackProvider.notifier).update(
+        (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+
+    updateTrackData(ref.read(currentTrackProvider));
   }
 }

@@ -15,13 +15,12 @@ void main() async {
   if (await Permission.storage.isDenied) {
     await Permission.storage.request();
   }
-  runApp(MaterialApp(
+  runApp(ProviderScope(
+      child: MaterialApp(
     theme: AppTheme.dark(),
-    home: const ProviderScope(
-      child: MyApp(),
-    ),
+    home: const MyApp(),
     debugShowCheckedModeBanner: false,
-  ));
+  )));
 }
 
 class MyApp extends ConsumerStatefulWidget {
@@ -34,7 +33,12 @@ class MyApp extends ConsumerStatefulWidget {
 class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
-    IsarDBServices().getSavedMusicFiles().then((value) {
+    initializeStates();
+    super.initState();
+  }
+
+  void initializeStates() async {
+    await IsarDBServices().getSavedMusicFiles().then((value) {
       if (value.isEmpty) {
         MusicAPI().getLocalMusicFiles().then((value) async {
           await IsarDBServices().getSavedMusicFiles().then((value) {
@@ -51,7 +55,6 @@ class _MyAppState extends ConsumerState<MyApp> {
       debugPrint(
           "Provider state ${ref.read(allMusicTrackProvider.notifier).update((state) => value[0].musicFilePaths!).length}");
     });
-    super.initState();
   }
 
   @override

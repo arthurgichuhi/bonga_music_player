@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'package:bonga_music/database/db_api/db_operations_api.dart';
-import 'package:bonga_music/database/music_files_database/all_music_file_paths.dart';
 import 'package:flutter/foundation.dart';
 import 'package:metadata_god/metadata_god.dart';
+
+import '../database/db_api/db_operations_api.dart';
+import '../database/music_files_database/all_music_file_paths.dart';
 
 class MusicFileInfo {
   List<String> musicFiles;
@@ -13,7 +14,7 @@ class MusicFileInfo {
 
 final class MusicAPI {
   // ignore: non_constant_identifier_names
-  Future<void> getLocalMusicFiles() async {
+  Future<List<String>> getLocalMusicFiles() async {
     // Get the directory of the device's internal storage.
     Directory internalStorageDirectory = Directory('/storage/emulated/0/Music');
 
@@ -37,6 +38,7 @@ final class MusicAPI {
     allMusicFiles.id = 0;
     allMusicFiles.musicFilePaths = musicFiles;
     await IsarDBServices().saveReadMusicFiles(allMusicFiles: allMusicFiles);
+    return musicFiles;
   }
 
 //this method returns audio file metadata
