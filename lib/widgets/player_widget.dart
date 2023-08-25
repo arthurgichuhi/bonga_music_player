@@ -5,7 +5,6 @@ import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:metadata_god/metadata_god.dart';
 
 import '../screen/music_resources.dart';
 
@@ -25,8 +24,7 @@ class _PlayerState extends ConsumerState<Player> {
   String currentPosition = '';
   bool isPlaying = false;
   ValueNotifier<int> track = ValueNotifier(0);
-  ValueNotifier<int> loopStatus = ValueNotifier(0);
-  ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
+  // ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
     debugPrint("Playlist player widget ${ref.read(currentTrackProvider)}");
@@ -59,7 +57,7 @@ class _PlayerState extends ConsumerState<Player> {
       if (mounted) {
         track.value += 1;
         if (track.value == ref.read(currentMusicFilePathsProvider).length - 1 &&
-            loopStatus.value == 2) {
+            ref.read(loopingStatusProvider) == 2) {
           track.value = 0;
         }
         ref.watch(currentTrackProvider.notifier).update(
@@ -126,11 +124,19 @@ class _PlayerState extends ConsumerState<Player> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
-                                      albumArt: metaData.value?.picture!.data,
+                                      albumArt: ref
+                                          .read(musicFilePathMetadataProvider)
+                                          .where((element) =>
+                                              element.keys.first ==
+                                              ref.read(currentTrackProvider))
+                                          .first
+                                          .values
+                                          .first
+                                          ?.picture
+                                          ?.data,
                                       audioPlayer: audioPlayer,
                                       position: position,
                                       duration: duration,
-                                      songMetaData: metaData,
                                     ),
                                   ));
                             },
@@ -188,11 +194,29 @@ class _PlayerState extends ConsumerState<Player> {
                         ),
                         Hero(
                             tag: 'hero-album-art',
-                            child: metaData.value?.picture != null
+                            child: ref
+                                        .read(musicFilePathMetadataProvider)
+                                        .where((element) =>
+                                            element.keys.first ==
+                                            ref.read(currentTrackProvider))
+                                        .first
+                                        .values
+                                        .first
+                                        ?.picture !=
+                                    null
                                 ? Padding(
                                     padding: const EdgeInsets.only(right: 3),
                                     child: Image.memory(
-                                      metaData.value!.picture!.data,
+                                      ref
+                                          .read(musicFilePathMetadataProvider)
+                                          .where((element) =>
+                                              element.keys.first ==
+                                              ref.read(currentTrackProvider))
+                                          .first
+                                          .values
+                                          .first!
+                                          .picture!
+                                          .data,
                                       height: 59,
                                     ),
                                   )

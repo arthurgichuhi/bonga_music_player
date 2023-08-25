@@ -1,7 +1,5 @@
 import 'dart:typed_data';
-
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/api/music_player_logic_operations.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/glowing_action_button.dart';
@@ -17,13 +15,11 @@ class PlayerScreen extends ConsumerStatefulWidget {
     required this.audioPlayer,
     required this.position,
     required this.duration,
-    required this.songMetaData,
   });
   final Uint8List? albumArt;
   final AudioPlayer audioPlayer;
   final Duration position;
   final Duration duration;
-  final ValueNotifier<Metadata?> songMetaData;
 
   @override
   ConsumerState<PlayerScreen> createState() => _PlayerScreenState();
@@ -71,18 +67,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         });
       }
     });
-    getSongsMetadata();
-  }
-
-  Future<void> getSongsMetadata() async {
-    for (var file in ref.read(currentMusicFilePathsProvider)) {
-      await MusicAPI()
-          .getMusicMetaData(file)
-          .then((value) => setState(() => songData.add(value)));
-    }
-    ref
-        .read(currentFilePathsMetadataProvider.notifier)
-        .update((state) => songData);
   }
 
   Future initializeAudio() async {
@@ -93,12 +77,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   void updateSongData(int currentTrack) async {
-    // setState(() {
     ref.read(currentTrackProvider.notifier).update(
         (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
-    widget.songMetaData.value = songData[track.value]!;
-    // });
-    // widget.audioPlayer.setSourceDeviceFile(widget.song.value);
     widget.audioPlayer.onDurationChanged.listen((newDuration) {
       setState(() {
         duration = newDuration;
@@ -134,8 +114,27 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   tag: 'hero-album-art',
                   child: Align(
                     alignment: Alignment.topCenter,
-                    child: widget.albumArt != null
-                        ? Image.memory(widget.albumArt!)
+                    child: ref
+                                .read(musicFilePathMetadataProvider)
+                                .where((element) =>
+                                    element.keys.first ==
+                                    ref.read(currentTrackProvider))
+                                .first
+                                .values
+                                .first
+                                ?.picture
+                                ?.data !=
+                            null
+                        ? Image.memory(ref
+                            .read(musicFilePathMetadataProvider)
+                            .where((element) =>
+                                element.keys.first ==
+                                ref.read(currentTrackProvider))
+                            .first
+                            .values
+                            .first!
+                            .picture!
+                            .data)
                         : const Icon(
                             CupertinoIcons.music_note,
                             size: 70,
@@ -206,7 +205,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.songMetaData.value!.title!,
+                          ref
+                                  .read(musicFilePathMetadataProvider)
+                                  .where((element) =>
+                                      element.keys.first ==
+                                      ref.read(currentTrackProvider))
+                                  .first
+                                  .values
+                                  .first
+                                  ?.title ??
+                              "Unknown",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 13.7),
                         ),
@@ -219,14 +227,34 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(widget.songMetaData.value!.artist!,
+                                Text(
+                                    ref
+                                            .read(musicFilePathMetadataProvider)
+                                            .where((element) =>
+                                                element.keys.first ==
+                                                ref.read(currentTrackProvider))
+                                            .first
+                                            .values
+                                            .first
+                                            ?.artist ??
+                                        "Unknown",
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.7)),
                                 const Divider(
                                   height: 5,
                                 ),
-                                Text(widget.songMetaData.value!.album!,
+                                Text(
+                                    ref
+                                            .read(musicFilePathMetadataProvider)
+                                            .where((element) =>
+                                                element.keys.first ==
+                                                ref.read(currentTrackProvider))
+                                            .first
+                                            .values
+                                            .first
+                                            ?.album ??
+                                        "Unknown",
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.7))
