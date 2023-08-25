@@ -25,7 +25,7 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
   @override
   void initState() {
     // initializeMusicFiles();
-    // setState(() => musicFiles = ref.read(allMusicTrackProvider));
+    // setState(() => musicFiles = ref.watch(allMusicTrackProvider));
     super.initState();
   }
 
@@ -43,62 +43,60 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
         centerTitle: true,
       ),
       body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4, right: 4, top: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ResourcesNavigation(
-                      button_name: 'Albums',
-                      on_pressed: () {
-                        if (pageIndex.value != 0) {
-                          pageIndex.value = 0;
-                        }
-                      }),
-                  ResourcesNavigation(
-                      button_name: 'PlayLists',
-                      on_pressed: () {
-                        if (pageIndex.value != 1) {
-                          pageIndex.value = 1;
-                        }
-                      }),
-                  ResourcesNavigation(
-                      button_name: 'Artists',
-                      on_pressed: () {
-                        if (pageIndex.value != 2) {
-                          pageIndex.value = 2;
-                        }
-                      }),
-                  ResourcesNavigation(
-                      button_name: 'Songs',
-                      on_pressed: () {
-                        if (pageIndex.value != 3) {
-                          pageIndex.value = 3;
-                        }
-                      })
-                ],
-              ),
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, right: 4, top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ResourcesNavigation(
+                    button_name: 'Albums',
+                    on_pressed: () {
+                      if (pageIndex.value != 0) {
+                        pageIndex.value = 0;
+                      }
+                    }),
+                ResourcesNavigation(
+                    button_name: 'PlayLists',
+                    on_pressed: () {
+                      if (pageIndex.value != 1) {
+                        pageIndex.value = 1;
+                      }
+                    }),
+                ResourcesNavigation(
+                    button_name: 'Artists',
+                    on_pressed: () {
+                      if (pageIndex.value != 2) {
+                        pageIndex.value = 2;
+                      }
+                    }),
+                ResourcesNavigation(
+                    button_name: 'Songs',
+                    on_pressed: () {
+                      if (pageIndex.value != 3) {
+                        pageIndex.value = 3;
+                      }
+                    })
+              ],
             ),
-            ValueListenableBuilder(
-              valueListenable: pageIndex,
-              builder: (context, value, _) {
-                return pages[value];
-              },
-            ),
-            ref.read(currentTrackProvider).isNotEmpty
-                ? const Player(
-                    screen: null,
-                  )
-                : const Center(
-                    child: Text("No music files available"),
-                  )
-          ],
-        ),
-      ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: pageIndex,
+            builder: (context, value, _) {
+              return pages[value];
+            },
+          ),
+          ref.watch(currentTrackProvider).isNotEmpty
+              ? const Player(
+                  screen: null,
+                )
+              : const Center(
+                  child: Text("No music files available"),
+                )
+        ],
+      )),
     );
   }
 }

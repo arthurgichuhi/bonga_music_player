@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/theme.dart';
@@ -11,12 +10,10 @@ import 'package:metadata_god/metadata_god.dart';
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({
     super.key,
-    required this.albumArt,
     required this.audioPlayer,
     required this.position,
     required this.duration,
   });
-  final Uint8List? albumArt;
   final AudioPlayer audioPlayer;
   final Duration position;
   final Duration duration;

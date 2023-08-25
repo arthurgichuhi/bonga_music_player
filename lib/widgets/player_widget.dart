@@ -27,7 +27,6 @@ class _PlayerState extends ConsumerState<Player> {
   // ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
-    debugPrint("Playlist player widget ${ref.read(currentTrackProvider)}");
     initializeAudio();
     audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
@@ -56,14 +55,15 @@ class _PlayerState extends ConsumerState<Player> {
     audioPlayer.onPlayerComplete.listen((event) {
       if (mounted) {
         track.value += 1;
-        if (track.value == ref.read(currentMusicFilePathsProvider).length - 1 &&
-            ref.read(loopingStatusProvider) == 2) {
+        if (track.value ==
+                ref.watch(currentMusicFilePathsProvider).length - 1 &&
+            ref.watch(loopingStatusProvider) == 2) {
           track.value = 0;
         }
         ref.watch(currentTrackProvider.notifier).update(
-            (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
-        updateTrackData(ref.read(currentTrackProvider));
-        audioPlayer.play(UrlSource(ref.read(currentTrackProvider)));
+            (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
+        updateTrackData(ref.watch(currentTrackProvider));
+        audioPlayer.play(UrlSource(ref.watch(currentTrackProvider)));
       }
     });
     super.initState();
@@ -124,16 +124,6 @@ class _PlayerState extends ConsumerState<Player> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
-                                      albumArt: ref
-                                          .read(musicFilePathMetadataProvider)
-                                          .where((element) =>
-                                              element.keys.first ==
-                                              ref.read(currentTrackProvider))
-                                          .first
-                                          .values
-                                          .first
-                                          ?.picture
-                                          ?.data,
                                       audioPlayer: audioPlayer,
                                       position: position,
                                       duration: duration,
@@ -148,25 +138,35 @@ class _PlayerState extends ConsumerState<Player> {
                                 //track title
                                 Text(ref
                                         .read(musicFilePathMetadataProvider)
-                                        .where((element) =>
-                                            element.keys.first ==
-                                            ref.read(currentTrackProvider))
-                                        .first
-                                        .values
-                                        .first
-                                        ?.title ??
-                                    "Unknown"),
+                                        .isNotEmpty
+                                    ? ref
+                                            .watch(
+                                                musicFilePathMetadataProvider)
+                                            .where((element) =>
+                                                element.keys.first ==
+                                                ref.watch(currentTrackProvider))
+                                            .first
+                                            .values
+                                            .first
+                                            ?.title ??
+                                        "Unknown"
+                                    : ""),
                                 //track Artist(s)
                                 Text(ref
                                         .read(musicFilePathMetadataProvider)
-                                        .where((element) =>
-                                            element.keys.first ==
-                                            ref.read(currentTrackProvider))
-                                        .first
-                                        .values
-                                        .first
-                                        ?.artist ??
-                                    "Unknown"),
+                                        .isNotEmpty
+                                    ? ref
+                                            .watch(
+                                                musicFilePathMetadataProvider)
+                                            .where((element) =>
+                                                element.keys.first ==
+                                                ref.watch(currentTrackProvider))
+                                            .first
+                                            .values
+                                            .first
+                                            ?.artist ??
+                                        "Unknown"
+                                    : ""),
                               ],
                             ),
                           ),
@@ -195,23 +195,27 @@ class _PlayerState extends ConsumerState<Player> {
                         Hero(
                             tag: 'hero-album-art',
                             child: ref
-                                        .read(musicFilePathMetadataProvider)
-                                        .where((element) =>
-                                            element.keys.first ==
-                                            ref.read(currentTrackProvider))
-                                        .first
-                                        .values
-                                        .first
-                                        ?.picture !=
-                                    null
+                                        .watch(musicFilePathMetadataProvider)
+                                        .isNotEmpty &&
+                                    ref
+                                            .watch(
+                                                musicFilePathMetadataProvider)
+                                            .where((element) =>
+                                                element.keys.first ==
+                                                ref.watch(currentTrackProvider))
+                                            .first
+                                            .values
+                                            .first
+                                            ?.picture !=
+                                        null
                                 ? Padding(
                                     padding: const EdgeInsets.only(right: 3),
                                     child: Image.memory(
                                       ref
-                                          .read(musicFilePathMetadataProvider)
+                                          .watch(musicFilePathMetadataProvider)
                                           .where((element) =>
                                               element.keys.first ==
-                                              ref.read(currentTrackProvider))
+                                              ref.watch(currentTrackProvider))
                                           .first
                                           .values
                                           .first!
@@ -260,16 +264,16 @@ class _PlayerState extends ConsumerState<Player> {
 //Got to previous Track
   void previousTrack() {
     if (track.value == 0) {
-      track.value = ref.read(currentMusicFilePathsProvider).length - 1;
-      ref.read(currentTrackProvider.notifier).update(
-          (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
-      updateTrackData(ref.read(currentTrackProvider));
+      track.value = ref.watch(currentMusicFilePathsProvider).length - 1;
+      ref.watch(currentTrackProvider.notifier).update(
+          (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
+      updateTrackData(ref.watch(currentTrackProvider));
     } else {
       track.value -= 1;
-      ref.read(currentTrackProvider.notifier).update(
-          (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+      ref.watch(currentTrackProvider.notifier).update(
+          (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
 
-      updateTrackData(ref.read(currentTrackProvider));
+      updateTrackData(ref.watch(currentTrackProvider));
     }
   }
 
@@ -294,13 +298,13 @@ class _PlayerState extends ConsumerState<Player> {
 
 //Go to next Track
   void nextTrack() {
-    if (track.value == ref.read(currentMusicFilePathsProvider).length - 1) {
+    if (track.value == ref.watch(currentMusicFilePathsProvider).length - 1) {
       track.value = 0;
     }
     track.value += 1;
-    ref.read(currentTrackProvider.notifier).update(
-        (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+    ref.watch(currentTrackProvider.notifier).update(
+        (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
 
-    updateTrackData(ref.read(currentTrackProvider));
+    updateTrackData(ref.watch(currentTrackProvider));
   }
 }

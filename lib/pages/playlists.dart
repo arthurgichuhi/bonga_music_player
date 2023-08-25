@@ -48,6 +48,8 @@ class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
                     ref
                         .read(playListIdDb.notifier)
                         .update((state) => playlistData[index].id);
+                    ref.read(currentMusicFilePathsProvider.notifier).update(
+                        (state) => playlistData[index].play_list_songs!);
                     Navigator.push(
                         context,
                         MaterialPageRoute(

@@ -7,20 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/single_track_enum.dart';
 
 class SingleTrack extends ConsumerStatefulWidget {
-  const SingleTrack(
-      {super.key,
-      required this.myTrackPath,
-      required this.trackTitle,
-      required this.trackArtist,
-      required this.musicFiles,
-      required this.singleTrackEnum,
-      required this.tracksCount});
+  const SingleTrack({
+    super.key,
+    required this.myTrackPath,
+    required this.singleTrackEnum,
+  });
   final String myTrackPath;
-  final String trackTitle;
-  final String trackArtist;
-  final List<String> musicFiles;
   final SingleTrackEnum singleTrackEnum;
-  final ValueChanged<int>? tracksCount;
 
   @override
   ConsumerState<SingleTrack> createState() => _SingleTrackState();
@@ -45,9 +38,7 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
           //Updating play state bool
           ref.read(playerStateProvider.notifier).update((state) => true);
           //Updating all File paths of selected playlist or album
-          ref
-              .read(currentMusicFilePathsProvider.notifier)
-              .update((state) => widget.musicFiles);
+          setState(() {});
         },
         child: SizedBox(
           child:
@@ -60,7 +51,15 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.trackTitle,
+                    ref
+                            .read(musicFilePathMetadataProvider)
+                            .where((element) =>
+                                element.keys.first == widget.myTrackPath)
+                            .first
+                            .values
+                            .first
+                            ?.title ??
+                        "Unknown",
                     style: TextStyle(
                         overflow: TextOverflow.ellipsis,
                         color:
@@ -68,7 +67,15 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
                                 ? AppColors.accent
                                 : null),
                   ),
-                  Text(widget.trackArtist)
+                  Text(ref
+                          .read(musicFilePathMetadataProvider)
+                          .where((element) =>
+                              element.keys.first == widget.myTrackPath)
+                          .first
+                          .values
+                          .first
+                          ?.artist ??
+                      "Unknown")
                 ],
               ),
             ),
@@ -81,25 +88,7 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
                           ),
                           PopupMenuItem(
                             child: const Text('Remove'),
-                            onTap: () async {
-                              await IsarDBServices()
-                                  .getPlayListData(ref.read(playListIdDb)!)
-                                  .then((value) async {
-                                List<String> newTrackList = [];
-                                PlayLists playLists = PlayLists();
-                                playLists.id = value!.id;
-                                playLists.playListName = value.playListName;
-                                for (var track in value.play_list_songs!) {
-                                  if (track != widget.myTrackPath) {
-                                    newTrackList.add(track);
-                                  }
-                                }
-                                playLists.play_list_songs = newTrackList;
-                                await IsarDBServices()
-                                    .savePlayListData(playLists: playLists);
-                                widget.tracksCount?.call(newTrackList.length);
-                              });
-                            },
+                            onTap: () => remove(),
                           )
                         ])
                 : const SizedBox()
@@ -107,5 +96,37 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
         ),
       ),
     );
+  }
+
+//this function removes a song from the play list and updates playlists data in state and database
+  void remove() async {
+    ref.read(playListIdDb) != null
+        ? await IsarDBServices()
+            .getPlayListData(ref.read(playListIdDb)!)
+            .then((value) async {
+            List<String> newTrackList = [];
+            PlayLists playLists = PlayLists();
+            playLists.id = value!.id;
+            playLists.playListName = value.playListName;
+            for (var track in value.play_list_songs!) {
+              if (track != widget.myTrackPath) {
+                newTrackList.add(track);
+              }
+            }
+            //updating current music file paths provider
+            ref
+                .read(currentMusicFilePathsProvider.notifier)
+                .update((state) => newTrackList);
+            playLists.play_list_songs = newTrackList;
+            var currentPlayListState = ref.read(playListsProvider);
+            for (var playlist in currentPlayListState) {
+              if (playlist.id == ref.read(playListIdDb)) {
+                playlist = playLists;
+              }
+            }
+            await IsarDBServices().savePlayListData(playLists: playLists);
+            setState(() {});
+          })
+        : debugPrint("======================Null Id======================");
   }
 }

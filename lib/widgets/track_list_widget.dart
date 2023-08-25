@@ -80,10 +80,6 @@ class _TrackListState extends ConsumerState<TrackList> {
     ref
         .read(currentMusicFilePathsProvider.notifier)
         .update((state) => sortedMusicFilePaths);
-    //Updating State to current sorted music file paths metadata
-    ref
-        .read(currentFilePathsMetadataProvider.notifier)
-        .update((state) => sortedMetadata);
   }
 
   @override
@@ -94,15 +90,8 @@ class _TrackListState extends ConsumerState<TrackList> {
         return SingleTrack(
           // currentTrack: widget.currentTrack,
           myTrackPath: ref.read(currentMusicFilePathsProvider)[index],
-          trackTitle:
-              ref.read(currentFilePathsMetadataProvider)[index]?.title ??
-                  "Unknown",
-          trackArtist:
-              ref.read(currentFilePathsMetadataProvider)[index]?.artist ??
-                  "Unknown",
-          musicFiles: sortedMusicFilePaths,
+
           singleTrackEnum: widget.singleTrackEnum,
-          tracksCount: null,
         );
       },
     );

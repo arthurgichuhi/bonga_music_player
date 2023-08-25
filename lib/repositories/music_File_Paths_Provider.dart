@@ -15,9 +15,6 @@ final musicFilePathMetadataProvider =
     StateProvider<List<Map<String, Metadata?>>>((ref) => []);
 //Current Music File Paths Provider
 final currentMusicFilePathsProvider = StateProvider<List<String>>((ref) => []);
-//Current Music File Paths Metadata
-final currentFilePathsMetadataProvider =
-    StateProvider<List<Metadata?>>((ref) => []);
 //Music Play State Provider
 final playerStateProvider = StateProvider<bool>((ref) => false);
 //Current Playlist database ID
