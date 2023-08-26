@@ -27,22 +27,13 @@ class _PlayListsScreenState extends ConsumerState<PlayListsScreen> {
         body: Column(
           children: [
             Expanded(
-              child: widget.playListData.play_list_songs!.isNotEmpty
+              child: ref.read(currentMusicFilePathsProvider).isNotEmpty
                   ? ListView.builder(
-                      itemCount: ref
-                          .watch(playListsProvider)
-                          .where(
-                              (element) => element.id == widget.playListData.id)
-                          .first
-                          .play_list_songs!
-                          .length,
+                      itemCount:
+                          ref.watch(currentMusicFilePathsProvider).length,
                       itemBuilder: (context, index) => SingleTrack(
-                        myTrackPath: ref
-                            .watch(playListsProvider)
-                            .where((element) =>
-                                element.id == widget.playListData.id)
-                            .first
-                            .play_list_songs![index],
+                        myTrackPath:
+                            ref.watch(currentMusicFilePathsProvider)[index],
                         singleTrackEnum: SingleTrackEnum.playlist,
                       ),
                     )

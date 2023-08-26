@@ -37,9 +37,9 @@ class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
   Widget build(BuildContext context) {
     return Expanded(
       child: ListView.builder(
-          itemCount: ref.read(playListsProvider).isEmpty
+          itemCount: ref.watch(playListsProvider).isEmpty
               ? playlistData.length
-              : ref.read(playListsProvider).length,
+              : ref.watch(playListsProvider).length,
           shrinkWrap: true,
           scrollDirection: Axis.vertical,
           itemBuilder: (context, index) => Card(
@@ -54,9 +54,9 @@ class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PlayListsScreen(
-                            playListData: ref.read(playListsProvider).isEmpty
+                            playListData: ref.watch(playListsProvider).isEmpty
                                 ? playlistData[index]
-                                : ref.read(playListsProvider)[index],
+                                : ref.watch(playListsProvider)[index],
                             musicFilesNo: (value) {
                               musicTracksNo.value = value;
                             },
@@ -70,9 +70,9 @@ class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(playlistData[index].playListName!),
-                        ref.read(playListsProvider).isNotEmpty
+                        ref.watch(playListsProvider).isNotEmpty
                             ? Text(
-                                "Tracks:${ref.read(playListsProvider)[index].play_list_songs!.length}")
+                                "Tracks:${ref.watch(playListsProvider)[index].play_list_songs!.length}")
                             : Text(
                                 'Tracks:${playlistData[index].play_list_songs!.length}')
                       ],

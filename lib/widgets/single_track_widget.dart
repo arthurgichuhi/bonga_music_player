@@ -125,7 +125,17 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
               }
             }
             await IsarDBServices().savePlayListData(playLists: playLists);
-            setState(() {});
+            await IsarDBServices().getListOfPlaylists().then((value) {
+              //updating playlist state
+              ref.read(playListsProvider.notifier).update((state) => value);
+              //updating current Music File Paths provider state
+              ref.read(currentMusicFilePathsProvider.notifier).update((state) =>
+                  ref
+                      .read(playListsProvider)
+                      .where((element) => element.id == ref.read(playListIdDb))
+                      .first
+                      .play_list_songs!);
+            });
           })
         : debugPrint("======================Null Id======================");
   }
