@@ -7,16 +7,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PlayListsScreen extends ConsumerStatefulWidget {
-  const PlayListsScreen(
-      {super.key, required this.playListData, required this.musicFilesNo});
+  const PlayListsScreen({super.key, required this.playListData});
   final PlayLists playListData;
-  final ValueChanged<int> musicFilesNo;
+
   @override
   ConsumerState<PlayListsScreen> createState() => _PlayListsScreenState();
 }
 
 class _PlayListsScreenState extends ConsumerState<PlayListsScreen> {
   ValueNotifier<int> playListTrackNo = ValueNotifier(0);
+  List<String> musicFilePaths = [];
+  @override
+  void initState() {
+    //Update music file paths variable to currentMusicFilePaths state
+    setState(() => musicFilePaths = ref.read(currentMusicFilePathsProvider));
+    //begin process of listening and updating musicFilePaths variable when
+    //currentMusicFilePathsProvider changes
+    ref.listen(currentMusicFilePathsProvider,
+        (previous, next) => setState(() => musicFilePaths = next));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,11 +40,9 @@ class _PlayListsScreenState extends ConsumerState<PlayListsScreen> {
             Expanded(
               child: ref.read(currentMusicFilePathsProvider).isNotEmpty
                   ? ListView.builder(
-                      itemCount:
-                          ref.watch(currentMusicFilePathsProvider).length,
+                      itemCount: musicFilePaths.length,
                       itemBuilder: (context, index) => SingleTrack(
-                        myTrackPath:
-                            ref.watch(currentMusicFilePathsProvider)[index],
+                        myTrackPath: musicFilePaths[index],
                         singleTrackEnum: SingleTrackEnum.playlist,
                       ),
                     )

@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/pages/albums.dart';
+import 'package:bonga_music/pages/songs.dart';
 import 'package:bonga_music/widgets/music_resources_navigation_button.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,12 @@ class MusicResources extends ConsumerStatefulWidget {
 
 class _MusicResourcesState extends ConsumerState<MusicResources> {
   final ValueNotifier<int> pageIndex = ValueNotifier(0);
-  final pages = [const AlbumsList(), const PlayListsWidget()];
+  //Music Pages
+  final pages = [
+    const AlbumsList(),
+    const PlayListsWidget(),
+    const SongsPage()
+  ];
   // List<String> musicFiles = [];
   @override
   void initState() {

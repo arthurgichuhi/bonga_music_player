@@ -15,7 +15,6 @@ class PlayListsWidget extends ConsumerStatefulWidget {
 
 class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
   List<PlayLists> playlistData = [];
-  ValueNotifier<int> musicTracksNo = ValueNotifier(0);
   @override
   void initState() {
     getPlayListData();
@@ -57,9 +56,6 @@ class _PlayListsWidgetState extends ConsumerState<PlayListsWidget> {
                             playListData: ref.watch(playListsProvider).isEmpty
                                 ? playlistData[index]
                                 : ref.watch(playListsProvider)[index],
-                            musicFilesNo: (value) {
-                              musicTracksNo.value = value;
-                            },
                           ),
                         ));
                   },
