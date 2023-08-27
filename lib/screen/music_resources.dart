@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/pages/albums.dart';
+import 'package:bonga_music/pages/artists.dart';
 import 'package:bonga_music/pages/songs.dart';
 import 'package:bonga_music/widgets/music_resources_navigation_button.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
@@ -25,6 +26,7 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
   final pages = [
     const AlbumsList(),
     const PlayListsWidget(),
+    const ArtistsPage(),
     const SongsPage()
   ];
   // List<String> musicFiles = [];

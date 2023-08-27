@@ -28,6 +28,9 @@ class _PlayerState extends ConsumerState<Player> {
   @override
   void initState() {
     initializeAudio();
+    ref.listen(currentTrackProvider, (previous, next) {
+      initializeAudio();
+    });
     audioPlayer.onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() {
