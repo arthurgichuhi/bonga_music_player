@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/screen/album_screen.dart';
+import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/album_widget_playlist_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,7 @@ class AlbumWidget extends ConsumerWidget {
                   child: Icon(
                     CupertinoIcons.music_note,
                     size: 120,
+                    color: AppColors.accent,
                   ),
                 ),
           const Divider(

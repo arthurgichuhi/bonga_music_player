@@ -35,7 +35,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   void initState() {
     super.initState();
     // getMusicMetaData();
-    initializeAudio();
+    // initializeAudio();
     // track.value =
     //     widget.songs.indexWhere((element) => element == widget.song.value);
     position = widget.position;
@@ -66,7 +66,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   Future initializeAudio() async {
     ref.watch(audioPlayerProvider).setReleaseMode(
-        ref.read(loopingStatusProvider) == 1
+        ref.watch(loopingStatusProvider) == 1
             ? ReleaseMode.loop
             : ReleaseMode.release);
     // widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
