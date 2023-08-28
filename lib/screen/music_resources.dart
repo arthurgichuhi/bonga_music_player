@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/pages/albums.dart';
 import 'package:bonga_music/pages/artists.dart';
 import 'package:bonga_music/pages/songs.dart';
@@ -9,8 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/playlists.dart';
 import '../repositories/music_File_Paths_Provider.dart';
-
-final audioPlayer = AudioPlayer();
 
 //this is the main application widget
 class MusicResources extends ConsumerStatefulWidget {
@@ -32,14 +29,11 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
   // List<String> musicFiles = [];
   @override
   void initState() {
-    // initializeMusicFiles();
-    // setState(() => musicFiles = ref.watch(allMusicTrackProvider));
     super.initState();
   }
 
   @override
   void dispose() {
-    audioPlayer.dispose();
     super.dispose();
   }
 

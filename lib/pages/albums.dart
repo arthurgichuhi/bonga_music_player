@@ -65,7 +65,7 @@ class _AlbumsListState extends ConsumerState<AlbumsList> {
         : null;
     //getting music metadata
     if (musicFiles.isNotEmpty) {
-      // ref.read(currentTrackProvider.notifier).update((state) => musicFiles[0]);
+      ref.read(currentTrackProvider.notifier).update((state) => musicFiles[0]);
       for (var musicFile in musicFiles) {
         await MusicAPI().getMusicMetaData(musicFile).then((value) {
           musicFilesMetadata.add(value);

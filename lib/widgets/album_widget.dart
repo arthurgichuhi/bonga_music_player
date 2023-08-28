@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 import 'package:bonga_music/database/playlists/playlist.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/screen/album_screen.dart';
 import 'package:bonga_music/widgets/album_widget_playlist_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AlbumWidget extends StatelessWidget {
+class AlbumWidget extends ConsumerWidget {
   const AlbumWidget(
       {super.key,
       required this.albumArt,
@@ -26,22 +28,27 @@ class AlbumWidget extends StatelessWidget {
   final List<PlayLists> playlists;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // trackFilePaths.value = songs;
     return InkWell(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AlbumViewScreen(
-              albumArt: albumArt,
-              albumName: albumName!,
-              albumArtist: artist!,
-              songs: songs,
-              duration: songDuration,
-              musicTitle: musicTitles,
-              trackArtists: trackArtist,
-            ),
-          )),
+      onTap: () {
+        ref
+            .read(currentMusicFilePathsProvider.notifier)
+            .update((state) => songs);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AlbumViewScreen(
+                albumArt: albumArt,
+                albumName: albumName!,
+                albumArtist: artist!,
+                songs: songs,
+                duration: songDuration,
+                musicTitle: musicTitles,
+                trackArtists: trackArtist,
+              ),
+            ));
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

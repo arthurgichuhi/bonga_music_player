@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+// ignore: unused_import
 import '../screen/music_resources.dart';
 
 class Player extends ConsumerStatefulWidget {
@@ -22,24 +23,35 @@ class _PlayerState extends ConsumerState<Player> {
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
   String currentPosition = '';
-  bool isPlaying = false;
+  ValueNotifier<bool> isPlaying = ValueNotifier(false);
   ValueNotifier<int> track = ValueNotifier(0);
   // ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
     initializeAudio();
-    ref.listen(currentTrackProvider, (previous, next) {
-      initializeAudio();
-    });
-    audioPlayer.onPlayerStateChanged.listen((state) {
+
+    super.initState();
+  }
+
+//Intitialzie audio player
+  Future initializeAudio() async {
+    ref.read(audioPlayerProvider).setReleaseMode(
+        ref.read(loopingStatusProvider) == 1
+            ? ReleaseMode.loop
+            : ReleaseMode.release);
+  }
+
+  //initialize audio player controller
+  void initalizeAudioPlayer() {
+    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((state) {
       if (mounted) {
         setState(() {
-          isPlaying = state == PlayerState.playing;
+          isPlaying.value = state == PlayerState.playing;
         });
       }
     });
 
-    audioPlayer.onDurationChanged.listen((newDuration) {
+    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -47,7 +59,7 @@ class _PlayerState extends ConsumerState<Player> {
       }
     });
 
-    audioPlayer.onPositionChanged.listen((newPosition) {
+    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -55,7 +67,7 @@ class _PlayerState extends ConsumerState<Player> {
         });
       }
     });
-    audioPlayer.onPlayerComplete.listen((event) {
+    ref.watch(audioPlayerProvider).onPlayerComplete.listen((event) {
       if (mounted) {
         track.value += 1;
         if (track.value ==
@@ -66,21 +78,17 @@ class _PlayerState extends ConsumerState<Player> {
         ref.watch(currentTrackProvider.notifier).update(
             (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
         updateTrackData(ref.watch(currentTrackProvider));
-        audioPlayer.play(UrlSource(ref.watch(currentTrackProvider)));
+        ref
+            .watch(audioPlayerProvider)
+            .play(UrlSource(ref.watch(currentTrackProvider)));
       }
     });
-    super.initState();
-  }
-
-//Intitialzie audio player
-  Future initializeAudio() async {
-    audioPlayer.setReleaseMode(ref.read(loopingStatusProvider) == 1
-        ? ReleaseMode.loop
-        : ReleaseMode.release);
   }
 
   @override
   Widget build(BuildContext context) {
+    isPlaying.value = ref.watch(playerStateProvider);
+    initalizeAudioPlayer();
     return ConstrainedBox(
       constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * .37,
@@ -102,7 +110,7 @@ class _PlayerState extends ConsumerState<Player> {
                     value: position.inSeconds.toDouble(),
                     onChanged: (value) async {
                       final position = Duration(seconds: value.toInt());
-                      await audioPlayer.seek(position);
+                      await ref.watch(audioPlayerProvider).seek(position);
                     }),
               )
             ],
@@ -127,7 +135,6 @@ class _PlayerState extends ConsumerState<Player> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
-                                      audioPlayer: audioPlayer,
                                       position: position,
                                       duration: duration,
                                     ),
@@ -185,7 +192,7 @@ class _PlayerState extends ConsumerState<Player> {
                             //this button triggers play and pause of playing music audio file
                             IconButton(
                                 onPressed: () => playOrPause(),
-                                icon: Icon(isPlaying
+                                icon: Icon(isPlaying.value
                                     ? CupertinoIcons.pause_fill
                                     : CupertinoIcons.play_fill)),
                             //this button is to play the next track on the list
@@ -246,7 +253,7 @@ class _PlayerState extends ConsumerState<Player> {
 
 //this function updates track data when user changes track
   updateTrackData(String musicTrack) async {
-    audioPlayer.onDurationChanged.listen((newDuration) {
+    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -254,7 +261,7 @@ class _PlayerState extends ConsumerState<Player> {
       }
     });
 
-    audioPlayer.onPositionChanged.listen((newPosition) {
+    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -282,20 +289,22 @@ class _PlayerState extends ConsumerState<Player> {
 
 //Play or Pause track
   void playOrPause() async {
-    if (isPlaying) {
-      await audioPlayer.pause();
+    if (isPlaying.value) {
+      await ref.watch(audioPlayerProvider).pause();
       setState(() {
-        isPlaying = false;
+        isPlaying.value = false;
       });
-      ref.read(playerStateProvider.notifier).update((state) => isPlaying);
+      ref.read(playerStateProvider.notifier).update((state) => isPlaying.value);
     } else {
       // await audioPlayer.resume();
-      await audioPlayer.play(UrlSource(ref.read(currentTrackProvider)));
+      await ref
+          .watch(audioPlayerProvider)
+          .play(UrlSource(ref.read(currentTrackProvider)));
 
       setState(() {
-        isPlaying = true;
+        isPlaying.value = true;
       });
-      ref.read(playerStateProvider.notifier).update((state) => isPlaying);
+      ref.read(playerStateProvider.notifier).update((state) => isPlaying.value);
     }
   }
 

@@ -27,40 +27,25 @@ class _ArtistsPageState extends ConsumerState<ArtistsPage> {
     await MusicAPI()
         .getLocalMusicFiles()
         .then((value) => setState(() => musicFiles = value));
-    debugPrint("==========Artists Page Init=============${musicFiles.length}");
+    ref.read(allMusicTrackProvider.notifier).update((state) => musicFiles);
     getArtistData();
   }
 
   //get artist data
   void getArtistData() {
-    for (var data in musicFiles) {
-      artists.add(ref
-              .read(musicFilePathMetadataProvider)
-              .where((element) => element.keys.first == data)
-              .first
-              .values
-              .first
-              ?.albumArtist ??
-          "Unknown");
-    }
-    artists.toSet().toList();
+    ref.read(musicFilePathMetadataProvider).forEach((element) {
+      artists.add(element.values.first?.albumArtist ?? "Unknown");
+    });
+    setState(() => artists.toSet().toList());
     debugPrint("==============Get Artists Data============${artists.length}");
     getArtistAlbums();
   }
 
   //get artist albums
   void getArtistAlbums() {
-    for (var file in musicFiles) {
-      albums.add(ref
-              .read(musicFilePathMetadataProvider)
-              .where((element) => element.keys.first == file)
-              .first
-              .values
-              .first
-              ?.album ??
-          "Unknown");
-    }
-    albums.toSet().toList();
+    ref.read(musicFilePathMetadataProvider).forEach(
+        (element) => albums.add(element.values.first?.album ?? "Unknown"));
+    setState(() => albums.toSet().toList());
     debugPrint("get artist album =========${albums.length}");
   }
 
@@ -93,12 +78,15 @@ class _ArtistAlbumsState extends ConsumerState<ArtistAlbums> {
   @override
   void initState() {
     //getting all albums from the artist
-    ref
-        .read(musicFilePathMetadataProvider)
-        .where((element) => element.values.first?.albumArtist == widget.artist)
-        .forEach((element) {
-      albums.add(element.values.first?.album ?? "Unknown");
+    ref.read(musicFilePathMetadataProvider).forEach((element) {
+      if (element.values.first != null) {
+        if (element.values.first!.artist == widget.artist) {
+          albums.add(element.values.first?.album ?? "Unknown");
+        }
+      }
     });
+
+    setState(() => albums.toSet().toList());
 
     debugPrint("Albums-------------${albums.length}");
     super.initState();

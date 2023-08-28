@@ -10,11 +10,9 @@ import 'package:metadata_god/metadata_god.dart';
 class PlayerScreen extends ConsumerStatefulWidget {
   const PlayerScreen({
     super.key,
-    required this.audioPlayer,
     required this.position,
     required this.duration,
   });
-  final AudioPlayer audioPlayer;
   final Duration position;
   final Duration duration;
 
@@ -42,13 +40,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     //     widget.songs.indexWhere((element) => element == widget.song.value);
     position = widget.position;
     duration = widget.duration;
-    widget.audioPlayer.onPlayerStateChanged.listen((playerState) {
+    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playerState) {
       ref
           .read(playerStateProvider.notifier)
           .update((state) => playerState == PlayerState.playing);
     });
 
-    widget.audioPlayer.onDurationChanged.listen((newDuration) {
+    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -56,7 +54,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       }
     });
 
-    widget.audioPlayer.onPositionChanged.listen((newPosition) {
+    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -67,22 +65,23 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   Future initializeAudio() async {
-    widget.audioPlayer.setReleaseMode(ref.read(loopingStatusProvider) == 1
-        ? ReleaseMode.loop
-        : ReleaseMode.release);
+    ref.watch(audioPlayerProvider).setReleaseMode(
+        ref.read(loopingStatusProvider) == 1
+            ? ReleaseMode.loop
+            : ReleaseMode.release);
     // widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
   }
 
   void updateSongData(int currentTrack) async {
     ref.read(currentTrackProvider.notifier).update(
         (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
-    widget.audioPlayer.onDurationChanged.listen((newDuration) {
+    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       setState(() {
         duration = newDuration;
       });
     });
 
-    widget.audioPlayer.onPositionChanged.listen((newPosition) {
+    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       setState(() {
         position = newPosition;
         currentPosition =
@@ -281,7 +280,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       value: position.inSeconds.toDouble(),
                       onChanged: (value) async {
                         final position = Duration(seconds: value.toInt());
-                        await widget.audioPlayer.seek(position);
+                        await ref.watch(audioPlayerProvider).seek(position);
                       }),
                   Padding(
                     padding:
@@ -327,14 +326,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                                 : Icons.pause,
                             onPressed: () async {
                               if (ref.read(playerStateProvider)) {
-                                await widget.audioPlayer.pause();
+                                await ref.watch(audioPlayerProvider).pause();
                                 ref
                                     .read(playerStateProvider.notifier)
                                     .update((state) => false);
                                 // widget.playerState.value = widget.isPlaying.value;
                               } else {
                                 // await audioPlayer.resume();
-                                await widget.audioPlayer.play(
+                                await ref.watch(audioPlayerProvider).play(
                                     UrlSource(ref.read(currentTrackProvider)));
 
                                 ref

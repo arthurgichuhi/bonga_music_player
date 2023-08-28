@@ -7,13 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:metadata_god/metadata_god.dart';
 
 class TrackList extends ConsumerStatefulWidget {
-  const TrackList(
-      {super.key,
-      required this.musicFilePaths,
-      required this.playerState,
-      required this.singleTrackEnum});
-  final List<String> musicFilePaths;
-  final ValueNotifier<bool> playerState;
+  const TrackList({super.key, required this.singleTrackEnum});
   final SingleTrackEnum singleTrackEnum;
 
   @override
@@ -23,37 +17,36 @@ class TrackList extends ConsumerStatefulWidget {
 class _TrackListState extends ConsumerState<TrackList> {
   List<Metadata?> songMetatdata = [];
   List<String> sortedMusicFilePaths = [];
-  List<Metadata?> sortedMetadata = [];
+  // List<Metadata?> sortedMetadata = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     sortMusicList();
-    debugPrint(
-        '========+++++${widget.musicFilePaths.length}=======+++++++++++');
   }
 
   void sortMusicList() async {
     var no = 0;
     List<Metadata?> temporarySorter = [];
-    for (var file in widget.musicFilePaths) {
+    for (var file in ref.read(currentMusicFilePathsProvider)) {
       await MusicAPI()
           .getMusicMetaData(file)
           .then((value) => setState(() => songMetatdata.add(value)));
     }
-    for (int i = 0; i <= widget.musicFilePaths.length - 1; i++) {
+    for (int i = 0;
+        i <= ref.read(currentMusicFilePathsProvider).length - 1;
+        i++) {
       no = songMetatdata.indexWhere((element) => element?.trackNumber == i + 1);
       if (!no.isNegative) {
         setState(() {
-          sortedMusicFilePaths.add(widget.musicFilePaths[no]);
-          sortedMetadata.add(songMetatdata[no]);
+          sortedMusicFilePaths.add(ref.read(currentMusicFilePathsProvider)[no]);
         });
       }
     }
 
     if (no.isNegative) {
-      for (var file in widget.musicFilePaths) {
+      for (var file in ref.read(currentMusicFilePathsProvider)) {
         await MusicAPI()
             .getMusicMetaData(file)
             .then((value) => temporarySorter.add(value));
@@ -66,16 +59,14 @@ class _TrackListState extends ConsumerState<TrackList> {
       });
       // }
       for (var data in temporarySorter) {
-        debugPrint(
-            '........${data!.title}...................${data.trackNumber}===================');
         setState(() {
-          sortedMusicFilePaths.add(widget.musicFilePaths[songMetatdata
-              .indexWhere((element) => element!.title == data.title)]);
-          sortedMetadata.add(songMetatdata[songMetatdata
-              .indexWhere((element) => element!.title == data.title)]);
+          sortedMusicFilePaths.add(ref.read(currentMusicFilePathsProvider)[
+              songMetatdata
+                  .indexWhere((element) => element!.title == data!.title)]);
         });
       }
     }
+    sortedMusicFilePaths.toSet().toList();
     //Updating State to current sorted music file paths
     ref
         .read(currentMusicFilePathsProvider.notifier)
@@ -85,7 +76,7 @@ class _TrackListState extends ConsumerState<TrackList> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: ref.read(currentMusicFilePathsProvider).length,
+      itemCount: ref.watch(currentMusicFilePathsProvider).length,
       itemBuilder: (context, index) {
         return SingleTrack(
           // currentTrack: widget.currentTrack,

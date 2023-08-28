@@ -1,11 +1,16 @@
 import 'dart:typed_data';
 import 'package:bonga_music/models/single_track_enum.dart';
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:bonga_music/widgets/track_list_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:metadata_god/metadata_god.dart';
 
-class AlbumViewScreen extends StatefulWidget {
+import '../api/music_player_logic_operations.dart';
+
+class AlbumViewScreen extends ConsumerStatefulWidget {
   const AlbumViewScreen(
       {super.key,
       required this.albumArt,
@@ -24,59 +29,65 @@ class AlbumViewScreen extends StatefulWidget {
   final List<String> trackArtists;
 
   @override
-  State<AlbumViewScreen> createState() => _AlbumViewScreenState();
+  ConsumerState<AlbumViewScreen> createState() => _AlbumViewScreenState();
 }
 
-class _AlbumViewScreenState extends State<AlbumViewScreen> {
+class _AlbumViewScreenState extends ConsumerState<AlbumViewScreen> {
   ValueNotifier<bool> playerState = ValueNotifier(false);
+  List<Metadata?> songMetadata = [];
+  List<String> sortedMusicFilePaths = [];
   @override
   void initState() {
-    // sortMusicList();
+    debugPrint(
+        "Widget songs:${widget.songs.length} provider songs:${ref.read(currentMusicFilePathsProvider).length}");
+    sortMusicList();
     super.initState();
   }
 
-  // void sortMusicList() async {
-  //   var no = 0;
-  //   List<Metadata?> temporarySorter = [];
-  //   for (var file in widget.songs) {
-  //     await MusicAPI()
-  //         .getMusicMetaData(file)
-  //         .then((value) => setState(() => songMetatdata.add(value)));
-  //   }
-  //   for (int i = 0; i <= widget.songs.length - 1; i++) {
-  //     no = songMetatdata.indexWhere((element) => element?.trackNumber == i + 1);
-  //     if (!no.isNegative) {
-  //       setState(() {
-  //         sortedMusicFilePaths.add(widget.songs[no]);
-  //         sortedMetadata.add(songMetatdata[no]);
-  //       });
-  //     }
-  //   }
-  //   debugPrint('========+++++$no=======+++++++++++');
-  //   if (no.isNegative) {
-  //     for (var file in widget.songs) {
-  //       await MusicAPI()
-  //           .getMusicMetaData(file)
-  //           .then((value) => temporarySorter.add(value));
-  //     }
-  //     temporarySorter.sort((a, b) {
-  //       int aTrack = a!.trackNumber!;
-  //       int bTrack = b!.trackNumber!;
-  //       return aTrack.compareTo(bTrack);
-  //     });
-  //     for (var data in temporarySorter) {
-  //       debugPrint(
-  //           '...........................${data!.trackNumber}===================');
-  //       setState(() {
-  //         sortedMusicFilePaths.add(widget.songs[songMetatdata
-  //             .indexWhere((element) => element!.title == data.title)]);
-  //         sortedMetadata.add(songMetatdata[songMetatdata
-  //             .indexWhere((element) => element!.title == data.title)]);
-  //       });
-  //     }
-  //   }
-  //   setState(() => trackFilePaths.value = sortedMusicFilePaths);
-  // }
+  void sortMusicList() async {
+    var no = 0;
+    List<Metadata?> temporarySorter = [];
+    for (var file in widget.songs) {
+      await MusicAPI()
+          .getMusicMetaData(file)
+          .then((value) => setState(() => songMetadata.add(value)));
+    }
+    for (int i = 0; i <= widget.songs.length - 1; i++) {
+      no = songMetadata.indexWhere((element) => element?.trackNumber == i + 1);
+      if (!no.isNegative) {
+        setState(() {
+          sortedMusicFilePaths.add(widget.songs[no]);
+          // sortedMetadata.add(songMetadata[no]);
+        });
+      }
+    }
+    debugPrint('========+++++$no=======+++++++++++');
+    if (no.isNegative) {
+      for (var file in widget.songs) {
+        await MusicAPI()
+            .getMusicMetaData(file)
+            .then((value) => temporarySorter.add(value));
+      }
+      temporarySorter.sort((a, b) {
+        int aTrack = a!.trackNumber!;
+        int bTrack = b!.trackNumber!;
+        return aTrack.compareTo(bTrack);
+      });
+      for (var data in temporarySorter) {
+        setState(() {
+          sortedMusicFilePaths.add(widget.songs[songMetadata
+              .indexWhere((element) => element!.title == data!.title)]);
+          // sortedMetadata.add(songMetatdata[songMetatdata
+          //     .indexWhere((element) => element!.title == data.title)]);
+        });
+      }
+    }
+    setState(
+        () => sortedMusicFilePaths = sortedMusicFilePaths.toSet().toList());
+    ref
+        .read(currentMusicFilePathsProvider.notifier)
+        .update((state) => sortedMusicFilePaths);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,10 +158,8 @@ class _AlbumViewScreenState extends State<AlbumViewScreen> {
                   ],
                 )),
           ),
-          Expanded(
+          const Expanded(
               child: TrackList(
-            playerState: playerState,
-            musicFilePaths: widget.songs,
             singleTrackEnum: SingleTrackEnum.album,
           )),
           const Player(
