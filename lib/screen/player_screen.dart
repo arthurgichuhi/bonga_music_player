@@ -34,12 +34,20 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   void initState() {
     super.initState();
-    // getMusicMetaData();
-    // initializeAudio();
-    // track.value =
-    //     widget.songs.indexWhere((element) => element == widget.song.value);
     position = widget.position;
     duration = widget.duration;
+  }
+
+  Future initializeAudio() async {
+    ref.watch(audioPlayerProvider).setReleaseMode(
+        ref.watch(loopingStatusProvider) == 1
+            ? ReleaseMode.loop
+            : ReleaseMode.stop);
+    // widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
+  }
+
+  //initialize listenser
+  void audioPlayerListeners() {
     ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playerState) {
       ref
           .read(playerStateProvider.notifier)
@@ -64,17 +72,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     });
   }
 
-  Future initializeAudio() async {
-    ref.watch(audioPlayerProvider).setReleaseMode(
-        ref.watch(loopingStatusProvider) == 1
-            ? ReleaseMode.loop
-            : ReleaseMode.release);
-    // widget.audioPlayer.setSourceDeviceFile(currentTrack.value);
-  }
-
-  void updateSongData(int currentTrack) async {
+//update song data
+  void updateSongData() async {
     ref.read(currentTrackProvider.notifier).update(
-        (state) => ref.read(currentMusicFilePathsProvider)[track.value]);
+        (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
+
+    ref
+        .read(audioPlayerProvider)
+        .setSource(UrlSource(ref.watch(currentTrackProvider)));
+
+    // .play(UrlSource(ref.read(currentTrackProvider)));
+    position = const Duration(seconds: 0);
     ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       setState(() {
         duration = newDuration;
@@ -91,13 +99,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   @override
-  void dispose() {
-    // widget.audioPlayer.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    initializeAudio();
+    audioPlayerListeners();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -111,7 +115,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: ref
-                                .read(musicFilePathMetadataProvider)
+                                .watch(musicFilePathMetadataProvider)
                                 .where((element) =>
                                     element.keys.first ==
                                     ref.read(currentTrackProvider))
@@ -121,19 +125,23 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                                 ?.picture
                                 ?.data !=
                             null
-                        ? Image.memory(ref
-                            .read(musicFilePathMetadataProvider)
-                            .where((element) =>
-                                element.keys.first ==
-                                ref.read(currentTrackProvider))
-                            .first
-                            .values
-                            .first!
-                            .picture!
-                            .data)
-                        : const Icon(
+                        ? Image.memory(
+                            ref
+                                .watch(musicFilePathMetadataProvider)
+                                .where((element) =>
+                                    element.keys.first ==
+                                    ref.read(currentTrackProvider))
+                                .first
+                                .values
+                                .first!
+                                .picture!
+                                .data,
+                            height: MediaQuery.of(context).size.height * .65,
+                          )
+                        : Icon(
                             CupertinoIcons.music_note,
-                            size: 70,
+                            color: AppColors.accent,
+                            size: MediaQuery.of(context).size.height * .65,
                           ),
                   ),
                 ),
@@ -153,36 +161,37 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.46,
                           ),
-                          Row(
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.favorite,
-                                    color: AppColors.cardLight,
-                                  )),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.search,
-                                    color: AppColors.cardLight,
-                                  )),
-                              PopupMenuButton(
-                                color: AppColors.cardLight,
-                                itemBuilder: (context) {
-                                  List<Text> labels = [
-                                    const Text('Edit Tags'),
-                                    const Text('Delete All')
-                                  ];
-                                  List<VoidCallback> callBacks = [() {}, () {}];
-                                  return List.generate(
-                                      3,
-                                      (index) => PopupMenuItem(
-                                            onTap: callBacks[index],
-                                            child: labels[index],
-                                          ));
-                                },
-                              )
+                              // IconButton(
+                              //     onPressed: () {},
+                              //     icon: const Icon(
+                              //       Icons.favorite,
+                              //       color: AppColors.cardLight,
+                              //     )),
+                              // IconButton(
+                              //     onPressed: () {},
+                              //     icon: const Icon(
+                              //       Icons.search,
+                              //       color: AppColors.cardLight,
+                              //     )),
+                              // PopupMenuButton(
+                              //   color: AppColors.cardLight,
+                              //   itemBuilder: (context) {
+                              //     List<Text> labels = [
+                              //       const Text('Edit Tags'),
+                              //       const Text('Delete All')
+                              //     ];
+                              //     List<VoidCallback> callBacks = [() {}, () {}];
+                              //     return List.generate(
+                              //         3,
+                              //         (index) => PopupMenuItem(
+                              //               onTap: callBacks[index],
+                              //               child: labels[index],
+                              //             ));
+                              //   },
+                              // )
                             ],
                           )
                         ],
@@ -288,7 +297,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(currentPosition),
+                        Text(currentPosition.length < 2
+                            ? "0$currentPosition"
+                            : currentPosition),
                         Text(
                             '${duration.inMinutes}:${duration.inSeconds % 60 < 10 ? '0${duration.inSeconds % 60}' : '${duration.inSeconds % 60}'}')
                       ],
@@ -300,68 +311,29 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GlowingActionButton.small(
-                            color:
-                                shuffle ? AppColors.accent : AppColors.cardDark,
+                            color: !ref.watch(shuffleProvider)
+                                ? AppColors.accent
+                                : AppColors.cardDark,
                             icon: Icons.shuffle,
-                            onPressed: () {
-                              setState(() => shuffle = !shuffle);
-                            }),
+                            onPressed: shuffleFilePaths),
                         GlowingActionButton.small(
                             color: AppColors.accent,
                             icon: Icons.arrow_back_ios_new,
-                            onPressed: () {
-                              debugPrint('${track.value}');
-                              track.value == 0
-                                  ? track.value = ref
-                                          .read(currentMusicFilePathsProvider)
-                                          .length -
-                                      1
-                                  : track.value -= 1;
-                              updateSongData(track.value);
-                            }),
+                            onPressed: previousTrack),
                         GlowingActionButton(
                             color: AppColors.accent,
-                            icon: !ref.read(playerStateProvider)
+                            icon: !ref.watch(playerStateProvider)
                                 ? Icons.play_arrow
                                 : Icons.pause,
-                            onPressed: () async {
-                              if (ref.read(playerStateProvider)) {
-                                await ref.watch(audioPlayerProvider).pause();
-                                ref
-                                    .read(playerStateProvider.notifier)
-                                    .update((state) => false);
-                                // widget.playerState.value = widget.isPlaying.value;
-                              } else {
-                                // await audioPlayer.resume();
-                                await ref.watch(audioPlayerProvider).play(
-                                    UrlSource(ref.read(currentTrackProvider)));
-
-                                ref
-                                    .read(playerStateProvider.notifier)
-                                    .update((state) => true);
-                                // widget.playerState.value = widget.isPlaying.value;
-                              }
-                            }),
+                            onPressed: playOrPause),
                         GlowingActionButton.small(
                             color: AppColors.accent,
                             icon: Icons.arrow_forward_ios_rounded,
-                            onPressed: () {
-                              track.value ==
-                                      ref
-                                              .read(
-                                                  currentMusicFilePathsProvider)
-                                              .length -
-                                          1
-                                  ? track.value = 0
-                                  : track.value += 1;
-                              updateSongData(track.value);
-                            }),
+                            onPressed: nextTrack),
                         GlowingActionButton.small(
                             color: loop ? AppColors.accent : AppColors.cardDark,
                             icon: CupertinoIcons.loop,
-                            onPressed: () {
-                              setState(() => loop = !loop);
-                            })
+                            onPressed: setLooping)
                       ],
                     ),
                   )
@@ -372,5 +344,65 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         ),
       ),
     );
+  }
+
+  //shuffle file paths
+  void shuffleFilePaths() {
+    bool shuffle = ref.read(shuffleProvider);
+    ref.read(shuffleProvider.notifier).update((state) => !shuffle);
+    if (shuffle) {
+      List<String> musicFiles = ref.read(currentMusicFilePathsProvider);
+      musicFiles.shuffle();
+      ref
+          .read(currentMusicFilePathsProvider.notifier)
+          .update((state) => musicFiles);
+    }
+  }
+
+  //navigate to previous track
+  void previousTrack() {
+    track.value == 0
+        ? track.value = 0
+        // track.value = ref.read(currentMusicFilePathsProvider).length - 1
+        : track.value -= 1;
+    debugPrint("Track value end ${track.value}");
+    updateSongData();
+  }
+
+  //play and pause controll
+  void playOrPause() async {
+    if (ref.read(playerStateProvider)) {
+      await ref.watch(audioPlayerProvider).pause();
+      ref.read(playerStateProvider.notifier).update((state) => false);
+      // widget.playerState.value = widget.isPlaying.value;
+    } else {
+      // await audioPlayer.resume();
+      await ref
+          .watch(audioPlayerProvider)
+          .play(UrlSource(ref.read(currentTrackProvider)));
+
+      ref.read(playerStateProvider.notifier).update((state) => true);
+      // widget.playerState.value = widget.isPlaying.value;
+    }
+  }
+
+  //navigate to next track
+  void nextTrack() {
+    track.value == ref.read(currentMusicFilePathsProvider).length - 1
+        ? track.value = 0
+        : track.value += 1;
+    updateSongData();
+  }
+
+  //set looping
+  void setLooping() {
+    int loop = ref.read(loopingStatusProvider);
+    loop == 2 ? loop = 0 : loop++;
+    ref.read(loopingStatusProvider.notifier).update((state) => loop);
+    loop == 1
+        ? ref.read(audioPlayerProvider).setReleaseMode(ReleaseMode.loop)
+        : loop == 0
+            ? ref.read(audioPlayerProvider).setReleaseMode(ReleaseMode.stop)
+            : null;
   }
 }

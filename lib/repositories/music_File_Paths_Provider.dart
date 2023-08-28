@@ -26,3 +26,5 @@ final playListIdDb = StateProvider<int?>((ref) => null);
 final loopingStatusProvider = StateProvider<int>((ref) => 0);
 //PlayLists State Provider
 final playListsProvider = StateProvider<List<PlayLists>>((ref) => []);
+//shuffle state provider
+final shuffleProvider = StateProvider<bool>((ref) => false);

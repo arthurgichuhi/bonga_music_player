@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/database/db_api/db_operations_api.dart';
 import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
@@ -37,8 +38,10 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
               .update((state) => widget.myTrackPath);
           //Updating play state bool
           ref.read(playerStateProvider.notifier).update((state) => true);
-          //Updating all File paths of selected playlist or album
-          setState(() {});
+          //triggler play
+          ref
+              .read(audioPlayerProvider)
+              .play(UrlSource(ref.read(currentTrackProvider)));
         },
         child: SizedBox(
           child:

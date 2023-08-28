@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:bonga_music/models/single_track_enum.dart';
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
@@ -69,17 +70,19 @@ class _AlbumViewScreenState extends ConsumerState<AlbumViewScreen> {
             .then((value) => temporarySorter.add(value));
       }
       temporarySorter.sort((a, b) {
-        int aTrack = a!.trackNumber!;
-        int bTrack = b!.trackNumber!;
+        int aTrack =
+            a?.trackNumber ?? Random.secure().nextInt(temporarySorter.length);
+        int bTrack =
+            b?.trackNumber ?? Random.secure().nextInt(temporarySorter.length);
         return aTrack.compareTo(bTrack);
       });
       for (var data in temporarySorter) {
-        setState(() {
+        if (data != null) {
           sortedMusicFilePaths.add(widget.songs[songMetadata
-              .indexWhere((element) => element!.title == data!.title)]);
-          // sortedMetadata.add(songMetatdata[songMetatdata
-          //     .indexWhere((element) => element!.title == data.title)]);
-        });
+              .indexWhere((element) => element!.title == data.title)]);
+        }
+        // sortedMetadata.add(songMetatdata[songMetatdata
+        //     .indexWhere((element) => element!.title == data.title)]);
       }
     }
     setState(
