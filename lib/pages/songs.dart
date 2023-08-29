@@ -31,9 +31,13 @@ class _SongsPageState extends ConsumerState<SongsPage> {
           .getMusicMetaData(music)
           .then((value) => musicFilesMetadata.add({music: value}));
     }
-    ref
-        .read(musicFilePathMetadataProvider.notifier)
-        .update((state) => musicFilesMetadata);
+    if (mounted) {
+      ref.read(musicFilePathMetadataProvider).isEmpty
+          ? ref
+              .read(musicFilePathMetadataProvider.notifier)
+              .update((state) => musicFilesMetadata)
+          : null;
+    }
   }
 
   @override

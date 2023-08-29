@@ -43,13 +43,13 @@ class _PlayerState extends ConsumerState<Player> {
 
   //initialize audio player controller
   void initalizeAudioPlayer() {
-    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playstate) {
-      ref
-          .read(playerStateProvider.notifier)
-          .update((state) => playstate == PlayerState.playing);
+    ref.read(audioPlayerProvider).onPlayerStateChanged.listen((playstate) {
+      // ref
+      //     .read(playerStateProvider.notifier)
+      //     .update((state) => playstate == PlayerState.playing);
     });
 
-    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
+    ref.read(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -57,7 +57,7 @@ class _PlayerState extends ConsumerState<Player> {
       }
     });
 
-    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
+    ref.read(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -65,12 +65,19 @@ class _PlayerState extends ConsumerState<Player> {
         });
       }
     });
-    ref.watch(audioPlayerProvider).onPlayerComplete.listen((event) {
+    ref.read(audioPlayerProvider).onPlayerComplete.listen((event) {
       ref.watch(loopingStatusProvider) == 0
           ? ref.read(audioPlayerProvider).stop()
           : ref.watch(loopingStatusProvider) == 2
               ? nextTrack()
-              : null;
+              : ref.read(audioPlayerProvider).setReleaseMode(ReleaseMode.loop);
+    });
+    ref.listen(currentTrackProvider, (previous, next) async {
+      ref.watch(loopingStatusProvider) == 2
+          ? await ref
+              .read(audioPlayerProvider)
+              .play(UrlSource(ref.watch(currentTrackProvider)))
+          : null;
     });
   }
 
@@ -99,7 +106,7 @@ class _PlayerState extends ConsumerState<Player> {
                     value: position.inSeconds.toDouble(),
                     onChanged: (value) async {
                       final position = Duration(seconds: value.toInt());
-                      await ref.watch(audioPlayerProvider).seek(position);
+                      await ref.read(audioPlayerProvider).seek(position);
                     }),
               )
             ],
@@ -181,7 +188,7 @@ class _PlayerState extends ConsumerState<Player> {
                             //this button triggers play and pause of playing music audio file
                             IconButton(
                                 onPressed: () => playOrPause(),
-                                icon: Icon(isPlaying.value
+                                icon: Icon(ref.watch(playerStateProvider)
                                     ? CupertinoIcons.pause_fill
                                     : CupertinoIcons.play_fill)),
                             //this button is to play the next track on the list
@@ -242,7 +249,7 @@ class _PlayerState extends ConsumerState<Player> {
 
 //this function updates track data when user changes track
   updateTrackData(String musicTrack) async {
-    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
+    ref.read(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -250,7 +257,7 @@ class _PlayerState extends ConsumerState<Player> {
       }
     });
 
-    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
+    ref.read(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -278,22 +285,16 @@ class _PlayerState extends ConsumerState<Player> {
 
 //Play or Pause track
   void playOrPause() async {
-    if (isPlaying.value) {
-      await ref.watch(audioPlayerProvider).pause();
-      setState(() {
-        isPlaying.value = false;
-      });
-      ref.read(playerStateProvider.notifier).update((state) => isPlaying.value);
+    if (ref.read(audioPlayerProvider).state == PlayerState.playing) {
+      await ref.read(audioPlayerProvider).pause();
+      ref.read(playerStateProvider.notifier).update((state) => false);
+    } else if (ref.read(audioPlayerProvider).state == PlayerState.paused) {
+      await ref.read(audioPlayerProvider).resume();
+      ref.read(playerStateProvider.notifier).update((state) => true);
     } else {
-      // await audioPlayer.resume();
       await ref
-          .watch(audioPlayerProvider)
+          .read(audioPlayerProvider)
           .play(UrlSource(ref.read(currentTrackProvider)));
-
-      setState(() {
-        isPlaying.value = true;
-      });
-      ref.read(playerStateProvider.notifier).update((state) => isPlaying.value);
     }
   }
 
@@ -302,7 +303,7 @@ class _PlayerState extends ConsumerState<Player> {
     if (track.value == ref.watch(currentMusicFilePathsProvider).length - 1) {
       track.value = 0;
     }
-    track.value += 1;
+    track.value++;
     ref.watch(currentTrackProvider.notifier).update(
         (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
 

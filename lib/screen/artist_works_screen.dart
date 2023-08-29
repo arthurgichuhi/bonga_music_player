@@ -1,3 +1,6 @@
+import 'package:bonga_music/models/single_track_enum.dart';
+import 'package:bonga_music/widgets/player_widget.dart';
+import 'package:bonga_music/widgets/track_list_widget.dart';
 import 'package:flutter/material.dart';
 
 class ArtistWorksScreen extends StatefulWidget {
@@ -10,7 +13,17 @@ class ArtistWorksScreen extends StatefulWidget {
 class _ArtistWorksScreenState extends State<ArtistWorksScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return const Scaffold(
+      body: Column(
+        children: [
+          Expanded(child: TrackList(singleTrackEnum: SingleTrackEnum.album)),
+          Padding(
+            padding: EdgeInsets.only(bottom: 10.0),
+            child: Player(screen: null),
+          )
+        ],
+      ),
+    );
   }
 }
 

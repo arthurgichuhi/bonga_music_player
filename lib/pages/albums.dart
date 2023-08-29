@@ -47,53 +47,58 @@ class _AlbumsListState extends ConsumerState<AlbumsList> {
 
 //Intializes music files and their metadata
   void initializeMusicFiles() async {
-//first checking whether if allMusicTrackProvider is empty and if so setting the
+    if (mounted) {
+      //first checking whether if allMusicTrackProvider is empty and if so setting the
 // music list to read from the database and if not read from the provider
-    ref.read(allMusicTrackProvider).isEmpty
-        ? await MusicAPI().getLocalMusicFiles().then((value) {
-            setState(() => musicFiles = value);
-            ref.read(allMusicTrackProvider.notifier).update((state) => value);
-            debugPrint("Albums======Music==========${musicFiles.length}");
-          })
-        : setState(() => musicFiles = ref.read(allMusicTrackProvider));
-    //setting current track provider is current Track is empty
-    ref.read(currentTrackProvider).isEmpty
-        ? ref.read(currentTrackProvider.notifier).update((state) =>
-            ref.read(allMusicTrackProvider).isNotEmpty
-                ? ref.read(allMusicTrackProvider)[0]
-                : musicFiles[0])
-        : null;
-    //getting music metadata
-    if (musicFiles.isNotEmpty) {
-      ref.read(currentTrackProvider).isEmpty
-          ? ref
-              .read(currentTrackProvider.notifier)
-              .update((state) => ref.read(allMusicTrackProvider)[0])
-          : null;
-      for (var musicFile in musicFiles) {
-        await MusicAPI().getMusicMetaData(musicFile).then((value) {
-          musicFilesMetadata.add(value);
-          filePathsMetadata.add({musicFile: value});
-        });
+      ref.read(allMusicTrackProvider).isEmpty
+          ? await MusicAPI().getLocalMusicFiles().then((value) {
+              setState(() => musicFiles = value);
+              ref.read(allMusicTrackProvider.notifier).update((state) => value);
+              debugPrint("Albums======Music==========${musicFiles.length}");
+            })
+          : setState(() => musicFiles = ref.read(allMusicTrackProvider));
+      if (mounted) {
+        //setting current track provider is current Track is empty
+        ref.read(currentTrackProvider).isEmpty
+            ? ref.read(currentTrackProvider.notifier).update((state) =>
+                ref.read(allMusicTrackProvider).isNotEmpty
+                    ? ref.read(allMusicTrackProvider)[0]
+                    : musicFiles[0])
+            : null;
       }
-      //settting current music file paths if it is empty
-      ref.read(currentMusicFilePathsProvider).isEmpty
-          ? ref
-              .read(currentMusicFilePathsProvider.notifier)
-              .update((state) => musicFiles)
-          : null;
-    }
-    //setting state of music file paths and metadata
-    ref
-        .read(musicFilePathMetadataProvider.notifier)
-        .update((state) => filePathsMetadata);
-    //getting individual albums
-    for (var metadata in musicFilesMetadata) {
-      musicAlbums.add(metadata?.album ?? "Unknown");
-    }
-    if (musicFiles.isNotEmpty) {
-      setupAlbumList();
-      getUserPlayListData().then((value) => setState(() => playLists = value));
+      //getting music metadata
+      if (musicFiles.isNotEmpty && mounted) {
+        ref.read(currentTrackProvider).isEmpty
+            ? ref
+                .read(currentTrackProvider.notifier)
+                .update((state) => ref.read(allMusicTrackProvider)[0])
+            : null;
+        for (var musicFile in musicFiles) {
+          await MusicAPI().getMusicMetaData(musicFile).then((value) {
+            musicFilesMetadata.add(value);
+            filePathsMetadata.add({musicFile: value});
+          });
+        }
+        //settting current music file paths if it is empty
+        ref.watch(currentMusicFilePathsProvider).isEmpty
+            ? ref
+                .read(currentMusicFilePathsProvider.notifier)
+                .update((state) => musicFiles)
+            : null;
+      }
+      //setting state of music file paths and metadata
+      ref
+          .read(musicFilePathMetadataProvider.notifier)
+          .update((state) => filePathsMetadata);
+      //getting individual albums
+      for (var metadata in musicFilesMetadata) {
+        musicAlbums.add(metadata?.album ?? "Unknown");
+      }
+      if (musicFiles.isNotEmpty) {
+        setupAlbumList();
+        getUserPlayListData()
+            .then((value) => setState(() => playLists = value));
+      }
     }
   }
 

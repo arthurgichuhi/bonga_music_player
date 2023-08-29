@@ -49,13 +49,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   //initialize listenser
   void audioPlayerListeners() {
     //
-    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playerState) {
-      ref
-          .read(playerStateProvider.notifier)
-          .update((state) => playerState == PlayerState.playing);
+    ref.read(audioPlayerProvider).onPlayerStateChanged.listen((playerState) {
+      if (mounted) {
+        ref
+            .read(playerStateProvider.notifier)
+            .update((state) => playerState == PlayerState.playing);
+      }
     });
     //
-    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
+    ref.read(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
           duration = newDuration;
@@ -63,7 +65,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       }
     });
 //
-    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
+    ref.read(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -72,24 +74,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       }
     });
     //
-    ref.watch(audioPlayerProvider).onPlayerComplete.listen((event) {
-      ref.watch(loopingStatusProvider) == 0
-          ? ref.watch(audioPlayerProvider).stop()
+    ref.read(audioPlayerProvider).onPlayerComplete.listen((event) async {
+      ref.read(loopingStatusProvider) == 0
+          ? await ref.read(audioPlayerProvider).stop()
           : ref.watch(loopingStatusProvider) == 2
               ? () => nextTrack()
-              // {
-              //     debugPrint("=============Track finished============");
-              //     track.value ==
-              //             ref.read(currentMusicFilePathsProvider).length - 1
-              //         ? track.value = 0
-              //         : track.value++;
-              //     ref.read(currentTrackProvider.notifier).update((state) =>
-              //         ref.read(currentMusicFilePathsProvider)[track.value]);
-              //     ref
-              //         .read(audioPlayerProvider)
-              //         .play(UrlSource(ref.watch(currentTrackProvider)));
-              //   }
-              : ref.read(audioPlayerProvider).setReleaseMode(ReleaseMode.loop);
+              : await ref
+                  .read(audioPlayerProvider)
+                  .setReleaseMode(ReleaseMode.loop);
     });
   }
 
@@ -104,13 +96,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
     // .play(UrlSource(ref.read(currentTrackProvider)));
     position = const Duration(seconds: 0);
-    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
+    ref.read(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       setState(() {
         duration = newDuration;
       });
     });
 
-    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
+    ref.read(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       setState(() {
         position = newPosition;
         currentPosition =
@@ -123,11 +115,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   Widget build(BuildContext context) {
     initializeAudio();
     audioPlayerListeners();
-    ref.listen(currentTrackProvider, (previous, next) {
-      ref
-          .read(audioPlayerProvider)
-          .play(UrlSource(ref.watch(currentTrackProvider)));
-    });
+    // if (mounted) {
+    //   ref.listen(currentTrackProvider, (previous, next) {
+    //     ref
+    //         .read(audioPlayerProvider)
+    //         .play(UrlSource(ref.watch(currentTrackProvider)));
+    //   });
+    // }
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -401,13 +395,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   //play and pause controll
   void playOrPause() async {
     if (ref.read(playerStateProvider)) {
-      await ref.watch(audioPlayerProvider).pause();
+      await ref.read(audioPlayerProvider).pause();
       ref.read(playerStateProvider.notifier).update((state) => false);
       // widget.playerState.value = widget.isPlaying.value;
     } else {
       // await audioPlayer.resume();
       await ref
-          .watch(audioPlayerProvider)
+          .read(audioPlayerProvider)
           .play(UrlSource(ref.read(currentTrackProvider)));
 
       ref.read(playerStateProvider.notifier).update((state) => true);

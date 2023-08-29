@@ -23,13 +23,14 @@ class _PlayListsScreenState extends ConsumerState<PlayListsScreen> {
     setState(() => musicFilePaths = ref.read(currentMusicFilePathsProvider));
     //begin process of listening and updating musicFilePaths variable when
     //currentMusicFilePathsProvider changes
-    ref.listen(currentMusicFilePathsProvider,
-        (previous, next) => setState(() => musicFilePaths = next));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    // ref.listen(currentMusicFilePathsProvider,
+    //     (previous, next) => setState(() => musicFilePaths = next));
     return Scaffold(
         appBar: AppBar(
           title: Text('${widget.playListData.playListName}'),
@@ -40,13 +41,15 @@ class _PlayListsScreenState extends ConsumerState<PlayListsScreen> {
             Expanded(
               child: ref.read(currentMusicFilePathsProvider).isNotEmpty
                   ? ListView.builder(
-                      itemCount: musicFilePaths.length,
+                      itemCount:
+                          ref.watch(currentMusicFilePathsProvider).length,
                       itemBuilder: (context, index) => SingleTrack(
-                        myTrackPath: musicFilePaths[index],
+                        myTrackPath:
+                            ref.watch(currentMusicFilePathsProvider)[index],
                         singleTrackEnum: SingleTrackEnum.playlist,
                       ),
                     )
-                  : const Center(child: CircularProgressIndicator()),
+                  : const Center(child: Text("Playlist Songs")),
             ),
             const Player(
               screen: null,

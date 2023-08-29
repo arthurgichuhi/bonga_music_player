@@ -1,4 +1,5 @@
 import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/screen/artist_works_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,23 +84,43 @@ class _AlbumWidget extends ConsumerWidget {
   final int number;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      color: number.isEven ? AppColors.accent : AppColors.secondary,
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              artist,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: const TextStyle(overflow: TextOverflow.ellipsis),
-            ),
-            const SizedBox(
-              height: 5,
-            ),
-            Text("Songs : $songsNo")
-          ]),
+    return InkWell(
+      onTap: () {
+        List<String> musicFiles = [];
+        ref
+            .read(musicFilePathMetadataProvider)
+            .where((element) => element.values.first?.albumArtist == artist)
+            .forEach((element) {
+          musicFiles.add(element.keys.first);
+        });
+        ref
+            .read(currentMusicFilePathsProvider.notifier)
+            .update((state) => musicFiles);
+        debugPrint("====Music Files======${musicFiles.length}");
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ArtistWorksScreen(),
+            ));
+      },
+      child: Card(
+        color: number.isEven ? AppColors.accent : AppColors.secondary,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                artist,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: const TextStyle(overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Text("Songs : $songsNo")
+            ]),
+      ),
     );
   }
 }
