@@ -15,7 +15,7 @@ class TrackList extends ConsumerWidget {
       itemBuilder: (context, index) {
         return SingleTrack(
           // currentTrack: widget.currentTrack,
-          myTrackPath: ref.read(currentMusicFilePathsProvider)[index],
+          myTrackPath: ref.watch(currentMusicFilePathsProvider)[index],
 
           singleTrackEnum: singleTrackEnum,
         );

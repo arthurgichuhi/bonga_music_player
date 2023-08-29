@@ -39,8 +39,6 @@ class _AlbumViewScreenState extends ConsumerState<AlbumViewScreen> {
   List<String> sortedMusicFilePaths = [];
   @override
   void initState() {
-    debugPrint(
-        "Widget songs:${widget.songs.length} provider songs:${ref.read(currentMusicFilePathsProvider).length}");
     sortMusicList();
     super.initState();
   }

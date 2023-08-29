@@ -43,12 +43,10 @@ class _PlayerState extends ConsumerState<Player> {
 
   //initialize audio player controller
   void initalizeAudioPlayer() {
-    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {
-          isPlaying.value = state == PlayerState.playing;
-        });
-      }
+    ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playstate) {
+      ref
+          .read(playerStateProvider.notifier)
+          .update((state) => playstate == PlayerState.playing);
     });
 
     ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
@@ -68,20 +66,11 @@ class _PlayerState extends ConsumerState<Player> {
       }
     });
     ref.watch(audioPlayerProvider).onPlayerComplete.listen((event) {
-      if (mounted) {
-        track.value += 1;
-        if (track.value ==
-                ref.watch(currentMusicFilePathsProvider).length - 1 &&
-            ref.watch(loopingStatusProvider) == 2) {
-          track.value = 0;
-        }
-        ref.watch(currentTrackProvider.notifier).update(
-            (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
-        updateTrackData(ref.watch(currentTrackProvider));
-        ref
-            .watch(audioPlayerProvider)
-            .play(UrlSource(ref.watch(currentTrackProvider)));
-      }
+      ref.watch(loopingStatusProvider) == 0
+          ? ref.read(audioPlayerProvider).stop()
+          : ref.watch(loopingStatusProvider) == 2
+              ? nextTrack()
+              : null;
     });
   }
 

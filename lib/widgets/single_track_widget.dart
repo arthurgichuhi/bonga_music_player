@@ -65,20 +65,28 @@ class _SingleTrackState extends ConsumerState<SingleTrack> {
                         "Unknown",
                     style: TextStyle(
                         overflow: TextOverflow.ellipsis,
-                        color:
-                            ref.read(currentTrackProvider) == widget.myTrackPath
-                                ? AppColors.accent
-                                : null),
+                        color: ref.watch(currentTrackProvider) ==
+                                widget.myTrackPath
+                            ? AppColors.accent
+                            : null),
                   ),
-                  Text(ref
-                          .read(musicFilePathMetadataProvider)
-                          .where((element) =>
-                              element.keys.first == widget.myTrackPath)
-                          .first
-                          .values
-                          .first
-                          ?.artist ??
-                      "Unknown")
+                  Text(
+                    ref
+                            .watch(musicFilePathMetadataProvider)
+                            .where((element) =>
+                                element.keys.first == widget.myTrackPath)
+                            .first
+                            .values
+                            .first
+                            ?.artist ??
+                        "Unknown",
+                    style: TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                        color: ref.watch(currentTrackProvider) ==
+                                widget.myTrackPath
+                            ? AppColors.accent
+                            : null),
+                  )
                 ],
               ),
             ),

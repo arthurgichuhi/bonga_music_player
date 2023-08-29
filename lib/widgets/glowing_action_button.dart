@@ -1,7 +1,10 @@
+import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import './../theme.dart';
 
-class GlowingActionButton extends StatelessWidget {
+class GlowingActionButton extends ConsumerWidget {
   const GlowingActionButton({
     Key? key,
     required this.color,
@@ -23,7 +26,7 @@ class GlowingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration:
           BoxDecoration(color: color, shape: BoxShape.circle, boxShadow: [
@@ -57,11 +60,31 @@ class GlowingActionButton extends StatelessWidget {
             child: SizedBox(
               width: size,
               height: size,
-              child: Icon(
-                icon,
-                size: 26,
-                color: Colors.white,
-              ),
+              child: icon != Icons.repeat
+                  ? Icon(
+                      icon,
+                      size: 26,
+                      color: Colors.white,
+                    )
+                  : ref.watch(loopingStatusProvider) == 0
+                      ? Icon(icon)
+                      : Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(
+                              icon,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            Text(
+                              ref.watch(loopingStatusProvider) == 1
+                                  ? ref.watch(loopingStatusProvider).toString()
+                                  : '',
+                              style: const TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
             ),
           ),
         ),

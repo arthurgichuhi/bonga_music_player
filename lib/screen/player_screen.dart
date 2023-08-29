@@ -48,12 +48,13 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   //initialize listenser
   void audioPlayerListeners() {
+    //
     ref.watch(audioPlayerProvider).onPlayerStateChanged.listen((playerState) {
       ref
           .read(playerStateProvider.notifier)
           .update((state) => playerState == PlayerState.playing);
     });
-
+    //
     ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
       if (mounted) {
         setState(() {
@@ -61,7 +62,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         });
       }
     });
-
+//
     ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
@@ -70,6 +71,26 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         });
       }
     });
+    //
+    ref.watch(audioPlayerProvider).onPlayerComplete.listen((event) {
+      ref.watch(loopingStatusProvider) == 0
+          ? ref.watch(audioPlayerProvider).stop()
+          : ref.watch(loopingStatusProvider) == 2
+              ? () => nextTrack()
+              // {
+              //     debugPrint("=============Track finished============");
+              //     track.value ==
+              //             ref.read(currentMusicFilePathsProvider).length - 1
+              //         ? track.value = 0
+              //         : track.value++;
+              //     ref.read(currentTrackProvider.notifier).update((state) =>
+              //         ref.read(currentMusicFilePathsProvider)[track.value]);
+              //     ref
+              //         .read(audioPlayerProvider)
+              //         .play(UrlSource(ref.watch(currentTrackProvider)));
+              //   }
+              : ref.read(audioPlayerProvider).setReleaseMode(ReleaseMode.loop);
+    });
   }
 
 //update song data
@@ -77,7 +98,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     ref.read(currentTrackProvider.notifier).update(
         (state) => ref.watch(currentMusicFilePathsProvider)[track.value]);
 
-    ref
+    await ref
         .read(audioPlayerProvider)
         .setSource(UrlSource(ref.watch(currentTrackProvider)));
 
@@ -102,6 +123,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   Widget build(BuildContext context) {
     initializeAudio();
     audioPlayerListeners();
+    ref.listen(currentTrackProvider, (previous, next) {
+      ref
+          .read(audioPlayerProvider)
+          .play(UrlSource(ref.watch(currentTrackProvider)));
+    });
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -211,7 +237,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       children: [
                         Text(
                           ref
-                                  .read(musicFilePathMetadataProvider)
+                                  .watch(musicFilePathMetadataProvider)
                                   .where((element) =>
                                       element.keys.first ==
                                       ref.read(currentTrackProvider))
@@ -234,7 +260,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                               children: [
                                 Text(
                                     ref
-                                            .read(musicFilePathMetadataProvider)
+                                            .watch(
+                                                musicFilePathMetadataProvider)
                                             .where((element) =>
                                                 element.keys.first ==
                                                 ref.read(currentTrackProvider))
@@ -251,7 +278,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                                 ),
                                 Text(
                                     ref
-                                            .read(musicFilePathMetadataProvider)
+                                            .watch(
+                                                musicFilePathMetadataProvider)
                                             .where((element) =>
                                                 element.keys.first ==
                                                 ref.read(currentTrackProvider))
@@ -266,7 +294,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                               ],
                             ),
                             Text(
-                                '${ref.read(currentMusicFilePathsProvider).indexWhere((element) => element == ref.read(currentTrackProvider)) + 1} / ${ref.read(currentMusicFilePathsProvider).length}',
+                                '${ref.watch(currentMusicFilePathsProvider).indexWhere((element) => element == ref.read(currentTrackProvider)) + 1} / ${ref.read(currentMusicFilePathsProvider).length}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 13.7))
@@ -289,7 +317,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       value: position.inSeconds.toDouble(),
                       onChanged: (value) async {
                         final position = Duration(seconds: value.toInt());
-                        await ref.watch(audioPlayerProvider).seek(position);
+                        await ref.read(audioPlayerProvider).seek(position);
                       }),
                   Padding(
                     padding:
@@ -311,7 +339,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GlowingActionButton.small(
-                            color: !ref.watch(shuffleProvider)
+                            color: ref.watch(shuffleProvider)
                                 ? AppColors.accent
                                 : AppColors.cardDark,
                             icon: Icons.shuffle,
@@ -331,8 +359,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                             icon: Icons.arrow_forward_ios_rounded,
                             onPressed: nextTrack),
                         GlowingActionButton.small(
-                            color: loop ? AppColors.accent : AppColors.cardDark,
-                            icon: CupertinoIcons.loop,
+                            color: ref.read(loopingStatusProvider) > 0
+                                ? AppColors.accent
+                                : AppColors.cardDark,
+                            icon: Icons.repeat,
                             onPressed: setLooping)
                       ],
                     ),
@@ -364,8 +394,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     track.value == 0
         ? track.value = 0
         // track.value = ref.read(currentMusicFilePathsProvider).length - 1
-        : track.value -= 1;
-    debugPrint("Track value end ${track.value}");
+        : track.value--;
     updateSongData();
   }
 
@@ -391,6 +420,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     track.value == ref.read(currentMusicFilePathsProvider).length - 1
         ? track.value = 0
         : track.value += 1;
+    // ref.watch(loopingStatusProvider) == 1
+    //     ? ref.watch(audioPlayerProvider).setReleaseMode(ReleaseMode.loop)
+    //     : ref.watch(loopingStatusProvider) == 2
+    //         ? ref.watch(audioPlayerProvider).setReleaseMode(ReleaseMode.release)
+    //         : ref.watch(audioPlayerProvider).setReleaseMode(ReleaseMode.stop);
     updateSongData();
   }
 
