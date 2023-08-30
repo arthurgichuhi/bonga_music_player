@@ -18,7 +18,8 @@ class SingleTrack extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    //this function removes a song from the play list and updates playlists data in state and database
+    //this function removes a song from the play list
+    // and updates playlists data in state and database
     void remove() async {
       ref.read(playListIdDb) != null
           ? await IsarDBServices()
