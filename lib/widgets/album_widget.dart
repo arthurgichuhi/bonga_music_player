@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:bonga_music/database/playlists/playlist.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/screen/album_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/album_widget_playlist_button.dart';

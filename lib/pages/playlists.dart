@@ -1,5 +1,5 @@
 import 'package:bonga_music/database/db_api/db_operations_api.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/screen/play_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,4 +1,4 @@
-package com.example.bonga_music
+package com.arthurgichuhiwairimu.bongaplay
 
 import io.flutter.embedding.android.FlutterActivity
 

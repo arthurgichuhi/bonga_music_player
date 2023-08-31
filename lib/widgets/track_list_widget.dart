@@ -1,5 +1,5 @@
 import 'package:bonga_music/models/single_track_enum.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/widgets/single_track_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

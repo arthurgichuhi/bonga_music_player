@@ -384,7 +384,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.bongaMusic.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthurgichuhiwairimu.bongaplay.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bonga_music.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/bonga_music";
@@ -398,7 +398,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.bongaMusic.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthurgichuhiwairimu.bongaplay.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bonga_music.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/bonga_music";
@@ -412,7 +412,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.bongaMusic.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.arthurgichuhiwairimu.bongaplay.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bonga_music.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/bonga_music";

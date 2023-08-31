@@ -1,4 +1,3 @@
-// ignore: file_names
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bonga_music/database/playlists/playlist.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,3 +27,5 @@ final loopingStatusProvider = StateProvider<int>((ref) => 0);
 final playListsProvider = StateProvider<List<PlayLists>>((ref) => []);
 //shuffle state provider
 final shuffleProvider = StateProvider<bool>((ref) => false);
+//final durationProvider
+final durationProvider = StateProvider<Duration>((ref) => const Duration());

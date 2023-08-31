@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/screen/player_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,8 +28,9 @@ class _PlayerState extends ConsumerState<Player> {
   // ValueNotifier<Metadata?> metaData = ValueNotifier(const Metadata());
   @override
   void initState() {
+    debugPrint("Rebuilding Player Widget");
     initializeAudio();
-
+    // initalizeAudioPlayer();
     super.initState();
   }
 
@@ -49,15 +50,14 @@ class _PlayerState extends ConsumerState<Player> {
       //     .update((state) => playstate == PlayerState.playing);
     });
 
-    ref.read(audioPlayerProvider).onDurationChanged.listen((newDuration) {
-      if (mounted) {
-        setState(() {
-          duration = newDuration;
-        });
-      }
+    ref.watch(audioPlayerProvider).onDurationChanged.listen((newDuration) {
+      setState(() {
+        duration = newDuration;
+      });
+      ref.read(durationProvider.notifier).update((state) => newDuration);
     });
 
-    ref.read(audioPlayerProvider).onPositionChanged.listen((newPosition) {
+    ref.watch(audioPlayerProvider).onPositionChanged.listen((newPosition) {
       if (mounted) {
         setState(() {
           position = newPosition;
@@ -102,7 +102,7 @@ class _PlayerState extends ConsumerState<Player> {
                     activeColor: AppColors.accent,
                     inactiveColor: Colors.white,
                     min: 0,
-                    max: duration.inSeconds.toDouble(),
+                    max: ref.watch(durationProvider).inSeconds.toDouble(),
                     value: position.inSeconds.toDouble(),
                     onChanged: (value) async {
                       final position = Duration(seconds: value.toInt());
@@ -132,7 +132,7 @@ class _PlayerState extends ConsumerState<Player> {
                                   MaterialPageRoute(
                                     builder: (context) => PlayerScreen(
                                       position: position,
-                                      duration: duration,
+                                      duration: ref.watch(durationProvider),
                                     ),
                                   ));
                             },

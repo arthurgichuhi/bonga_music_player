@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../pages/playlists.dart';
-import '../repositories/music_File_Paths_Provider.dart';
+import '../repositories/musicFilePathsProvider.dart';
 
 //this is the main application widget
 class MusicResources extends ConsumerStatefulWidget {
@@ -41,7 +41,10 @@ class _MusicResourcesState extends ConsumerState<MusicResources> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bonga Music Player'),
+        title: const Text(
+          'Bonga Play',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SizedBox(

@@ -1,4 +1,4 @@
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/screen/artist_works_screen.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:flutter/material.dart';

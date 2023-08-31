@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/theme.dart';
 import 'package:bonga_music/widgets/glowing_action_button.dart';
 import 'package:flutter/cupertino.dart';

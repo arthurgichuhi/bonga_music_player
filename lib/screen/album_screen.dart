@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:bonga_music/models/single_track_enum.dart';
-import 'package:bonga_music/repositories/music_File_Paths_Provider.dart';
+import 'package:bonga_music/repositories/musicFilePathsProvider.dart';
 import 'package:bonga_music/widgets/player_widget.dart';
 import 'package:bonga_music/widgets/track_list_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -94,25 +94,36 @@ class _AlbumViewScreenState extends ConsumerState<AlbumViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          PopupMenuButton(
-            itemBuilder: (context) {
-              List<VoidCallback> functions = [() {}, () {}, () {}];
-              List<Text> textButtons = [
-                const Text('Edit Tags'),
-                const Text('Delete All'),
-                const Text('Close')
-              ];
-              return List.generate(
-                  2,
-                  (index) => PopupMenuItem(
-                        child: textButtons[index],
-                        onTap: functions[index],
-                      ));
-            },
-          )
-        ],
+        centerTitle: true,
+        title: Text(ref
+                .read(musicFilePathMetadataProvider)
+                .where((element) =>
+                    element.keys.first ==
+                    ref.read(currentMusicFilePathsProvider)[0])
+                .first
+                .values
+                .first
+                ?.albumArtist ??
+            "Unknown"),
+        // actions: [
+        //   IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+        //   PopupMenuButton(
+        //     itemBuilder: (context) {
+        //       List<VoidCallback> functions = [() {}, () {}, () {}];
+        //       List<Text> textButtons = [
+        //         const Text('Edit Tags'),
+        //         const Text('Delete All'),
+        //         const Text('Close')
+        //       ];
+        //       return List.generate(
+        //           2,
+        //           (index) => PopupMenuItem(
+        //                 child: textButtons[index],
+        //                 onTap: functions[index],
+        //               ));
+        //     },
+        //   )
+        // ],
       ),
       body: Column(
         children: [
@@ -163,8 +174,11 @@ class _AlbumViewScreenState extends ConsumerState<AlbumViewScreen> {
               child: TrackList(
             singleTrackEnum: SingleTrackEnum.album,
           )),
-          const Player(
-            screen: null,
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Player(
+              screen: null,
+            ),
           ),
         ],
       ),
